@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>BSEB Admin Exam Routine Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:80px;
+    transition:background .3s,color .3s;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+.preview-routine table{
+    width:100%;
+    border-collapse:collapse;
+    margin:10px 0;
+    font-size:12px;
+}
+.preview-routine th,.preview-routine td{
+    border:1px solid var(--border);
+    padding:8px;
+    text-align:left;
+}
+.preview-routine th{
+    background:#1e3a8a;
+    color:#ffffff;
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-6xl mx-auto">
+
+<!-- Header -->
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="../exam.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-emerald-400 shadow-sm">← Exam Page</a>
+    <div class="flex-1 min-w-0">
+        <h1 class="text-sm sm:text-lg font-extrabold truncate">📅 BSEB Admin Exam Routine Manager</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-emerald-400 truncate">PUBLISH & EDIT EXAM SCHEDULES</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+    <button id="logoutBtn" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold shadow-md">Sign Out</button>
+</header>
+
+<!-- Admin Login Gate -->
+<section id="authGate" class="max-w-md mx-auto mt-10 px-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">🔐</div>
+            <h2 class="text-lg font-extrabold">Admin Exam Routine Login</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">लॉग इन करके कक्षा 8वीं से 12वीं तक का परीक्षा रूटीन पब्लिश करें।</p>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-bold text-center"></div>
+
+        <form id="loginForm" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">Admin Email ID</label>
+                <input type="email" id="adminEmail" required placeholder="admin@bseb.ac.in" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password</label>
+                <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs sm:text-sm font-extrabold shadow-lg">
+                Unlock Exam Routine Studio
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Main Admin Workspace -->
+<main id="adminWorkspace" class="hidden px-3.5 mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left Column: Routine Creator & HTML Table Builder -->
+    <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+            <div>
+                <h2 id="editorHeading" class="text-base sm:text-lg font-extrabold">➕ नया परीक्षा कार्यक्रम (Exam Routine) जोड़ें</h2>
+                <p class="text-[11px] text-[var(--muted)]">यहाँ से पब्लिश किया गया रूटीन सीधे <code class="text-emerald-400">exam.html</code> पर दिखेगा।</p>
+            </div>
+            <div class="px-3 py-1.5 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-[10px] font-bold">
+                UID: <span id="adminUidText" class="text-emerald-400 font-mono">...</span>
+                <button type="button" onclick="copyUid()" class="ml-1.5 text-blue-400 underline">Copy</button>
+            </div>
+        </div>
+
+        <input type="hidden" id="editRoutineId">
+
+        <div class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">परीक्षा कार्यक्रम का शीर्षक (Routine Title)</label>
+                <input type="text" id="routineTitle" placeholder="जैसे: बिहार बोर्ड इंटरमीडिएट (12th) वार्षिक परीक्षा कार्यक्रम 2027" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div>
+                    <label class="block text-xs font-bold mb-1">कक्षा (Class)</label>
+                    <select id="routineClass" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="Class 10">Class 10th (Matric)</option>
+                        <option value="Class 12">Class 12th (Inter)</option>
+                        <option value="Class 11">Class 11th</option>
+                        <option value="Class 9">Class 9th</option>
+                        <option value="Class 8">Class 8th</option>
+                        <option value="All">All Classes</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">संकाय (Stream)</label>
+                    <select id="routineStream" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="All">All Streams</option>
+                        <option value="Science">Science</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Commerce">Commerce</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">परीक्षा प्रकार (Type)</label>
+                    <select id="routineType" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="Annual Exam">Annual Exam</option>
+                        <option value="Sent-Up Exam">Sent-Up Exam</option>
+                        <option value="Monthly Exam">Monthly Exam</option>
+                        <option value="Practical Exam">Practical Exam</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">जारी तिथि (Date)</label>
+                    <input type="text" id="routineDate" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1">प्रथम पाली समय (1st Shift Time)</label>
+                    <input type="text" id="shift1Time" value="09:30 AM - 12:45 PM" class="w-full px-3.5 py-2 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">द्वितीय पाली समय (2nd Shift Time)</label>
+                    <input type="text" id="shift2Time" value="02:00 PM - 05:15 PM" class="w-full px-3.5 py-2 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                <div>
+                    <label class="block text-xs font-bold mb-1">पीडीएफ / गूगल ड्राइव लिंक (Optional)</label>
+                    <input type="url" id="routinePdfLink" placeholder="https://drive.google.com/..." class="w-full px-3.5 py-2 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+                <div class="flex items-center gap-4 pt-4">
+                    <label class="flex items-center gap-2 text-xs font-extrabold cursor-pointer">
+                        <input type="checkbox" id="routineIsNew" checked class="w-4 h-4 rounded text-emerald-500">
+                        <span>Show "NEW" Badge</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Quick Row Adder to Build HTML Routine Table Easily -->
+            <div class="p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-extrabold text-emerald-400">⚡ त्वरित परीक्षा तिथि पंक्ति जोड़ें (Quick Row Builder):</span>
+                    <button type="button" onclick="insertSampleRoutine()" class="text-[11px] font-bold text-amber-400 hover:underline">✨ Sample 10th/12th Routine भरें</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="text" id="rowDate" placeholder="तिथि व दिन (e.g. 15 Feb 2027 - सोमवार)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="rowShift1" placeholder="प्रथम पाली विषय (e.g. गणित / Physics)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="rowShift2" placeholder="द्वितीय पाली विषय (e.g. हिंदी / History)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                </div>
+                <button type="button" onclick="appendExamRow()" class="w-full py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold hover:bg-emerald-600 hover:text-white transition">
+                    + तालिका में यह परीक्षा तिथि जोड़ें (Add Row to HTML Table)
+                </button>
+            </div>
+
+            <!-- Direct HTML Editor -->
+            <div>
+                <label class="block text-xs font-extrabold text-blue-400 mb-1.5">Routine HTML Code (Table & Instructions):</label>
+                <textarea id="routineHtmlInput" rows="7" oninput="updateRoutinePreview()" placeholder="<table>...</table>" class="w-full p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <!-- Live Preview -->
+            <div>
+                <label class="block text-xs font-extrabold text-emerald-400 mb-1.5">👁️ लाइव रूटीन प्रीव्यू (Live Student View):</label>
+                <div id="liveRoutinePreview" class="preview-routine p-4 rounded-2xl bg-[var(--card-sub)] border border-dashed border-[var(--border)] min-h-[100px] text-xs overflow-x-auto">
+                    <p class="text-[var(--muted)]">यहाँ आपके परीक्षा कार्यक्रम का लाइव प्रीव्यू दिखेगा...</p>
+                </div>
+            </div>
+
+            <div id="statusAlert" class="hidden p-3 rounded-2xl text-xs font-bold text-center"></div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="publishRoutine()" id="publishBtn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                    🚀 परीक्षा रूटीन पब्लिश / सेव करें
+                </button>
+                <button type="button" onclick="resetRoutineEditor()" id="cancelEditBtn" class="hidden px-5 py-3.5 rounded-2xl inactive-btn text-xs font-extrabold">
+                    रद्द करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Manage Published Routines -->
+    <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl h-fit">
+        <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-[var(--border)]">
+            <h3 class="text-base font-extrabold">📋 प्रकाशित रूटीन (Manage)</h3>
+            <span id="adminRoutineCount" class="text-xs font-bold text-emerald-400">0</span>
+        </div>
+
+        <div id="adminRoutineList" class="space-y-2.5 max-h-[540px] overflow-y-auto pr-1">
+            <div class="py-10 text-center text-xs text-[var(--muted)]">लोड हो रहा है...</div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.cachedRoutines = [];
+
+document.getElementById("routineDate").value = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric"
+});
+
+onAuthStateChanged(auth, (user) => {
+    const authGate = document.getElementById("authGate");
+    const workspace = document.getElementById("adminWorkspace");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+        authGate.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
+        document.getElementById("adminUidText").innerText = user.uid;
+        listenToRoutines();
+    } else {
+        authGate.classList.remove("hidden");
+        workspace.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+    }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+        errBox.innerText = "अमान्य एडमिन ईमेल या पासवर्ड।";
+        errBox.classList.remove("hidden");
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+window.copyUid = function() {
+    const uid = document.getElementById("adminUidText").innerText;
+    navigator.clipboard.writeText(uid);
+    showStatus("आपका Admin UID कॉपी हो गया!", true);
+};
+
+function showStatus(msg, isSuccess) {
+    const box = document.getElementById("statusAlert");
+    box.innerText = msg;
+    box.className = isSuccess
+        ? "p-3 rounded-2xl text-xs font-bold text-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        : "p-3 rounded-2xl text-xs font-bold text-center bg-rose-500/15 text-rose-400 border border-rose-500/30";
+    box.classList.remove("hidden");
+    setTimeout(() => box.classList.add("hidden"), 4500);
+}
+
+window.publishRoutine = async function() {
+    const editId = document.getElementById("editRoutineId").value;
+    const title = document.getElementById("routineTitle").value.trim();
+    const className = document.getElementById("routineClass").value;
+    const stream = document.getElementById("routineStream").value;
+    const examType = document.getElementById("routineType").value;
+    const date = document.getElementById("routineDate").value.trim();
+    const shift1Time = document.getElementById("shift1Time").value.trim();
+    const shift2Time = document.getElementById("shift2Time").value.trim();
+    const pdfLink = document.getElementById("routinePdfLink").value.trim();
+    const isNew = document.getElementById("routineIsNew").checked;
+    const htmlContent = document.getElementById("routineHtmlInput").value.trim();
+
+    if (!title || !htmlContent) {
+        showStatus("कृपया रूटीन का शीर्षक और तालिका (HTML) दोनों भरें!", false);
+        return;
+    }
+
+    const btn = document.getElementById("publishBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const payload = {
+        title,
+        className,
+        stream,
+        examType,
+        date,
+        shift1Time,
+        shift2Time,
+        pdfLink,
+        isNew,
+        htmlContent,
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "routines", editId), payload);
+            showStatus("✅ परीक्षा रूटीन सफलतापूर्वक अपडेट हो गया!", true);
+        } else {
+            payload.createdAt = serverTimestamp();
+            await addDoc(collection(db, "routines"), payload);
+            await addDoc(collection(db, "updates"), {
+                title: `📅 ${title}`,
+                date,
+                url: "exam.html",
+                isNew
+            });
+            showStatus("🚀 नया परीक्षा कार्यक्रम पब्लिश हो गया!", true);
+        }
+        window.resetRoutineEditor();
+    } catch (err) {
+        showStatus("❌ परमिशन अस्वीकृत! कृपया Firestore Rules में अपना Admin UID अपडेट करें।", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 परीक्षा रूटीन पब्लिश / सेव करें";
+    }
+};
+
+function listenToRoutines() {
+    const q = query(collection(db, "routines"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        window.cachedRoutines = list;
+        renderAdminRoutineList(list);
+    });
+}
+
+function renderAdminRoutineList(list) {
+    const container = document.getElementById("adminRoutineList");
+    document.getElementById("adminRoutineCount").innerText = `${list.length} Routines`;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs text-[var(--muted)]">अभी कोई परीक्षा कार्यक्रम पब्लिश नहीं हुआ है।</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] flex items-center justify-between gap-3";
+        div.innerHTML = `
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-[10px] font-extrabold text-emerald-400">${item.className || ""}</span>
+                    <span class="text-[10px] text-amber-400 font-bold">• ${item.examType || ""}</span>
+                </div>
+                <h4 class="text-xs font-extrabold truncate">${item.title || ""}</h4>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="loadRoutineForEdit('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 text-blue-400 text-[11px] font-extrabold hover:bg-blue-600 hover:text-white transition">✏️ Edit</button>
+                <button onclick="deleteRoutine('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-[11px] font-extrabold hover:bg-rose-600 hover:text-white transition">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+window.loadRoutineForEdit = function(id) {
+    const item = window.cachedRoutines.find(r => r.id === id);
+    if (!item) return;
+
+    document.getElementById("editRoutineId").value = item.id;
+    document.getElementById("routineTitle").value = item.title || "";
+    document.getElementById("routineClass").value = item.className || "Class 10";
+    document.getElementById("routineStream").value = item.stream || "All";
+    document.getElementById("routineType").value = item.examType || "Annual Exam";
+    document.getElementById("routineDate").value = item.date || "";
+    document.getElementById("shift1Time").value = item.shift1Time || "09:30 AM - 12:45 PM";
+    document.getElementById("shift2Time").value = item.shift2Time || "02:00 PM - 05:15 PM";
+    document.getElementById("routinePdfLink").value = item.pdfLink || "";
+    document.getElementById("routineIsNew").checked = !!item.isNew;
+    document.getElementById("routineHtmlInput").value = item.htmlContent || "";
+
+    document.getElementById("editorHeading").innerText = "✏️ परीक्षा कार्यक्रम संशोधित करें (Edit Mode)";
+    document.getElementById("cancelEditBtn").classList.remove("hidden");
+    window.updateRoutinePreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.resetRoutineEditor = function() {
+    document.getElementById("editRoutineId").value = "";
+    document.getElementById("routineTitle").value = "";
+    document.getElementById("routinePdfLink").value = "";
+    document.getElementById("routineHtmlInput").value = "";
+    document.getElementById("editorHeading").innerText = "➕ नया परीक्षा कार्यक्रम (Exam Routine) जोड़ें";
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    window.updateRoutinePreview();
+};
+
+window.deleteRoutine = async function(id) {
+    if (!confirm("क्या आप इस परीक्षा कार्यक्रम को हटाना चाहते हैं?")) return;
+    try {
+        await deleteDoc(doc(db, "routines", id));
+        showStatus("🗑️ परीक्षा रूटीन हटा दिया गया।", true);
+    } catch (e) {
+        showStatus("❌ हटाने की अनुमति नहीं है।", false);
+    }
+};
+</script>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function updateRoutinePreview() {
+    const val = document.getElementById("routineHtmlInput").value.trim();
+    document.getElementById("liveRoutinePreview").innerHTML = val || '<p class="text-[var(--muted)]">यहाँ आपके परीक्षा कार्यक्रम का लाइव प्रीव्यू दिखेगा...</p>';
+}
+
+function appendExamRow() {
+    const d = document.getElementById("rowDate").value.trim();
+    const s1 = document.getElementById("rowShift1").value.trim() || "—";
+    const s2 = document.getElementById("rowShift2").value.trim() || "—";
+    if (!d) return;
+
+    const area = document.getElementById("routineHtmlInput");
+    let current = area.value.trim();
+
+    const newRow = `  <tr>\n    <td><b>${d}</b></td>\n    <td>${s1}</td>\n    <td>${s2}</td>\n  </tr>\n`;
+
+    if (!current.includes("<table")) {
+        current = `<table>\n  <tr>\n    <th>दिनांक एवं दिन (Date)</th>\n    <th>प्रथम पाली (1st Shift)</th>\n    <th>द्वितीय पाली (2nd Shift)</th>\n  </tr>\n${newRow}</table>`;
+    } else if (current.includes("</table>")) {
+        current = current.replace("</table>", `${newRow}</table>`);
+    } else {
+        current += `\n${newRow}`;
+    }
+
+    area.value = current;
+    document.getElementById("rowDate").value = "";
+    document.getElementById("rowShift1").value = "";
+    document.getElementById("rowShift2").value = "";
+    updateRoutinePreview();
+}
+
+function insertSampleRoutine() {
+    document.getElementById("routineTitle").value = "बिहार बोर्ड मैट्रिक (10वीं) वार्षिक परीक्षा कार्यक्रम 2027";
+    document.getElementById("routineClass").value = "Class 10";
+    document.getElementById("routineStream").value = "All";
+    document.getElementById("routineType").value = "Annual Exam";
+    document.getElementById("routineHtmlInput").value = `<table>
+  <tr>
+    <th>दिनांक एवं दिन (Date)</th>
+    <th>प्रथम पाली (09:30 AM - 12:45 PM)</th>
+    <th>द्वितीय पाली (02:00 PM - 05:15 PM)</th>
+  </tr>
+  <tr>
+    <td><b>15 फरवरी 2027 (सोमवार)</b></td>
+    <td>मातृभाषा (हिंदी / उर्दू / बांग्ला / मैथिली)</td>
+    <td>मातृभाषा (हिंदी / उर्दू / बांग्ला / मैथिली)</td>
+  </tr>
+  <tr>
+    <td><b>16 फरवरी 2027 (मंगलवार)</b></td>
+    <td>गणित (Mathematics)</td>
+    <td>गणित (Mathematics)</td>
+  </tr>
+  <tr>
+    <td><b>17 फरवरी 2027 (बुधवार)</b></td>
+    <td>द्वितीय भारतीय भाषा (संस्कृत / अहिंदी)</td>
+    <td>द्वितीय भारतीय भाषा (संस्कृत / अहिंदी)</td>
+  </tr>
+  <tr>
+    <td><b>18 फरवरी 2027 (गुरुवार)</b></td>
+    <td>सामाजिक विज्ञान (Social Science)</td>
+    <td>सामाजिक विज्ञान (Social Science)</td>
+  </tr>
+  <tr>
+    <td><b>19 फरवरी 2027 (शुक्रवार)</b></td>
+    <td>विज्ञान (Science)</td>
+    <td>विज्ञान (Science)</td>
+  </tr>
+  <tr>
+    <td><b>20 फरवरी 2027 (शनिवार)</b></td>
+    <td>अंग्रेजी (सामान्य)</td>
+    <td>अंग्रेजी (सामान्य)</td>
+  </tr>
+</table>
+<ul>
+  <li>सभी परीक्षार्थियों को प्रश्न-पत्र पढ़ने के लिए <b>15 मिनट का अतिरिक्त समय (Cool-off Time)</b> दिया जाएगा।</li>
+  <li>परीक्षा प्रारंभ होने से <b>30 मिनट पूर्व</b> परीक्षा केंद्र में प्रवेश करना अनिवार्य है।</li>
+</ul>`;
+    updateRoutinePreview();
+}
+</script>
+
+</body>
+</html>
