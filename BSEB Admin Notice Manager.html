@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>BSEB Admin Notice Editor (HTML)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#334155;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+    --pill-bg:#e0e7ff;
+    --pill-text:#1e40af;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#1e293b;
+    --btn-inactive:#1e293b;
+    --pill-bg:#1e293b;
+    --pill-text:#93c5fd;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:80px;
+    transition:background .3s,color .3s;
+    overflow-x:hidden;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+/* Preview HTML Styling */
+.preview-html h1,.preview-html h2,.preview-html h3{
+    font-weight:800;
+    margin:10px 0 6px;
+}
+.preview-html p{ margin-bottom:8px; line-height:1.6; }
+.preview-html ul{ padding-left:20px; list-style:disc; margin-bottom:10px; }
+.preview-html table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:12px; }
+.preview-html th,.preview-html td{ border:1px solid var(--border); padding:8px; text-align:left; }
+.preview-html th{ background:var(--pill-bg); color:var(--pill-text); }
+.preview-html a{ color:#3b82f6; font-weight:700; text-decoration:underline; }
+</style>
+</head>
+
+<body class="dark-mode max-w-6xl mx-auto">
+
+<!-- Top Header -->
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="../notice.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-blue-500 shadow-sm">← Notice Board</a>
+    <div class="flex-1 min-w-0">
+        <h1 class="text-sm sm:text-lg font-extrabold truncate">🛡️ BSEB Admin Notice Studio (HTML)</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-blue-500 truncate">ADMINISTRATION NOTICE PUBLISHER</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+    <button id="logoutBtn" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold shadow-md">Sign Out</button>
+</header>
+
+<!-- Admin Login Gate -->
+<section id="authGate" class="max-w-md mx-auto mt-10 px-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">🔐</div>
+            <h2 class="text-lg font-extrabold">Admin Notice Login</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">लॉग इन करने के बाद आप HTML फॉर्मेट में नोटिस पब्लिश कर सकते हैं।</p>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-bold text-center"></div>
+
+        <form id="loginForm" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">Admin Email ID</label>
+                <input type="email" id="adminEmail" required placeholder="admin@bseb.ac.in" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password</label>
+                <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit" id="loginBtn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-extrabold shadow-lg">
+                Unlock HTML Notice Editor
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Main Admin Notice Workspace -->
+<main id="adminWorkspace" class="hidden px-3.5 mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left Column: HTML Notice Editor -->
+    <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+            <div>
+                <h2 id="editorHeading" class="text-base sm:text-lg font-extrabold">➕ नया HTML नोटिस लिखें</h2>
+                <p class="text-[11px] text-[var(--muted)]">यहाँ लिखा गया HTML सीधे <code class="text-blue-400">notice.html</code> पर लाइव दिखेगा।</p>
+            </div>
+            <div class="px-3 py-1.5 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-[10px] font-bold">
+                UID: <span id="adminUidText" class="text-blue-400 font-mono">...</span>
+                <button type="button" onclick="copyUid()" class="ml-1.5 text-emerald-400 underline">Copy</button>
+            </div>
+        </div>
+
+        <input type="hidden" id="editNoticeId">
+
+        <div class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">नोटिस का शीर्षक (Notice Title)</label>
+                <input type="text" id="noticeTitle" placeholder="जैसे: वार्षिक माध्यमिक परीक्षा 2027 का परीक्षा कार्यक्रम जारी" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1">श्रेणी (Category)</label>
+                    <select id="noticeCategory" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="Important">Important (महत्वपूर्ण)</option>
+                        <option value="Exam">Exam (परीक्षा)</option>
+                        <option value="Result">Result (रिजल्ट)</option>
+                        <option value="Admission">Admission (नामांकन)</option>
+                        <option value="General">General (सामान्य)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">दिनांक (Display Date)</label>
+                    <input type="text" id="noticeDate" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+                <div class="col-span-2 sm:col-span-1 flex items-end pb-2">
+                    <label class="flex items-center gap-2 text-xs font-extrabold cursor-pointer select-none">
+                        <input type="checkbox" id="noticeIsNew" checked class="w-4 h-4 rounded text-blue-600">
+                        <span>Show "NEW" Badge</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold mb-1">पीडीएफ / गूगल ड्राइव लिंक (Optional PDF/Drive Link)</label>
+                <input type="url" id="noticeLink" placeholder="https://drive.google.com/..." class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+            </div>
+
+            <!-- Quick HTML Tag Toolbar -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-xs font-extrabold text-blue-400">HTML Content Editor (Quick Tags):</label>
+                    <button type="button" onclick="insertSampleNotice()" class="text-[11px] font-bold text-amber-400 hover:underline">✨ Sample HTML भरें</button>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mb-2">
+                    <button type="button" onclick="insertHtmlTag('<h3>मुख्य शीर्षक (Heading)</h3>\n')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold hover:border-blue-500 border border-transparent">H3 शीर्षक</button>
+                    <button type="button" onclick="insertHtmlTag('<p>यहाँ अपना पैराग्राफ लिखें...</p>\n')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">पैराग्राफ (P)</button>
+                    <button type="button" onclick="insertHtmlTag('<b>महत्वपूर्ण शब्द</b>')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">Bold</button>
+                    <button type="button" onclick="insertHtmlTag('<ul>\n  <li>पहला महत्वपूर्ण बिंदु</li>\n  <li>दूसरा महत्वपूर्ण बिंदु</li>\n</ul>\n')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">लिस्ट (UL)</button>
+                    <button type="button" onclick="insertHtmlTag('<table>\n  <tr><th>विषय / पाली</th><th>दिनांक एवं समय</th></tr>\n  <tr><td>गणित (प्रथम पाली)</td><td>15 Feb 2027 (9:30 AM)</td></tr>\n  <tr><td>विज्ञान (प्रथम पाली)</td><td>16 Feb 2027 (9:30 AM)</td></tr>\n</table>\n')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">📊 टेबल (Table)</button>
+                    <button type="button" onclick="insertHtmlTag('<div style=&quot;padding:12px;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.12);border-radius:10px;margin:10px 0;&quot;>📌 <b>विशेष सूचना:</b> सभी विद्यार्थी समय से 30 मिनट पूर्व परीक्षा केंद्र पर पहुँचें।</div>\n')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">📌 हाईलाइट बॉक्स</button>
+                    <button type="button" onclick="insertHtmlTag('<a href=&quot;https://&quot; target=&quot;_blank&quot;>आधिकारिक लिंक यहाँ देखें ↗</a>')" class="px-2.5 py-1.5 rounded-xl inactive-btn text-[11px] font-bold">🔗 लिंक (A)</button>
+                </div>
+
+                <textarea id="noticeHtmlInput" rows="8" oninput="updateLivePreview()" placeholder="<p>एडमिन यहाँ HTML फॉर्मेट में नोटिस लिखें...</p>" class="w-full p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <!-- Live HTML Preview -->
+            <div>
+                <label class="block text-xs font-extrabold text-emerald-400 mb-1.5">👁️ लाइव HTML प्रीव्यू (Live Student View):</label>
+                <div id="liveHtmlPreview" class="preview-html p-4 rounded-2xl bg-[var(--card-sub)] border border-dashed border-[var(--border)] min-h-[110px] text-xs sm:text-sm">
+                    <p class="text-[var(--muted)]">यहाँ आपके HTML नोटिस का लाइव प्रीव्यू दिखेगा...</p>
+                </div>
+            </div>
+
+            <div id="statusAlert" class="hidden p-3 rounded-2xl text-xs font-bold text-center"></div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="publishNotice()" id="publishBtn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                    🚀 नोटिस पब्लिश / सेव करें
+                </button>
+                <button type="button" onclick="resetEditor()" id="cancelEditBtn" class="hidden px-5 py-3.5 rounded-2xl inactive-btn text-xs font-extrabold">
+                    रद्द करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Published Notices List -->
+    <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl h-fit">
+        <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-[var(--border)]">
+            <h3 class="text-base font-extrabold">📋 प्रकाशित नोटिस (Manage)</h3>
+            <span id="adminNoticeCount" class="text-xs font-bold text-blue-400">0</span>
+        </div>
+
+        <div id="adminNoticeList" class="space-y-2.5 max-h-[540px] overflow-y-auto pr-1">
+            <div class="py-10 text-center text-xs text-[var(--muted)]">लोड हो रहा है...</div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+// Replace with your Admin UID if you want client-side UID lock in addition to Firestore Rules
+const ALLOWED_ADMIN_UIDS = [
+  "PUT_YOUR_ADMIN_UID_HERE"
+];
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.cachedNotices = [];
+
+// Set today's date by default
+document.getElementById("noticeDate").value = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric"
+});
+
+onAuthStateChanged(auth, (user) => {
+    const authGate = document.getElementById("authGate");
+    const workspace = document.getElementById("adminWorkspace");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+        authGate.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
+        document.getElementById("adminUidText").innerText = user.uid;
+        listenToNotices();
+    } else {
+        authGate.classList.remove("hidden");
+        workspace.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+    }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+        errBox.innerText = "अमान्य एडमिन ईमेल या पासवर्ड।";
+        errBox.classList.remove("hidden");
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+window.copyUid = function() {
+    const uid = document.getElementById("adminUidText").innerText;
+    navigator.clipboard.writeText(uid);
+    showStatus("आपका Admin UID कॉपी हो गया! इसे Firestore Rules में पेस्ट करें।", true);
+};
+
+function showStatus(msg, isSuccess) {
+    const box = document.getElementById("statusAlert");
+    box.innerText = msg;
+    box.className = isSuccess
+        ? "p-3 rounded-2xl text-xs font-bold text-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        : "p-3 rounded-2xl text-xs font-bold text-center bg-rose-500/15 text-rose-400 border border-rose-500/30";
+    box.classList.remove("hidden");
+    setTimeout(() => box.classList.add("hidden"), 4500);
+}
+
+window.publishNotice = async function() {
+    const editId = document.getElementById("editNoticeId").value;
+    const title = document.getElementById("noticeTitle").value.trim();
+    const category = document.getElementById("noticeCategory").value;
+    const date = document.getElementById("noticeDate").value.trim();
+    const isNew = document.getElementById("noticeIsNew").checked;
+    const link = document.getElementById("noticeLink").value.trim();
+    const htmlContent = document.getElementById("noticeHtmlInput").value.trim();
+
+    if (!title || !htmlContent) {
+        showStatus("कृपया नोटिस का शीर्षक और HTML कंटेंट दोनों भरें!", false);
+        return;
+    }
+
+    const btn = document.getElementById("publishBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const payload = {
+        title,
+        category,
+        date,
+        isNew,
+        link,
+        htmlContent,
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "notices", editId), payload);
+            showStatus("✅ नोटिस सफलतापूर्वक अपडेट हो गया!", true);
+        } else {
+            payload.createdAt = serverTimestamp();
+            await addDoc(collection(db, "notices"), payload);
+            // Also sync headline with 'updates' collection for index.html home page
+            await addDoc(collection(db, "updates"), {
+                title,
+                date,
+                url: "notice.html",
+                isNew
+            });
+            showStatus("🚀 नया HTML नोटिस सफलतापूर्वक पब्लिश हो गया!", true);
+        }
+        window.resetEditor();
+    } catch (err) {
+        showStatus("❌ परमिशन अस्वीकृत! कृपया अपना Admin UID फायरबेस रूल्स में जोड़ें।", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 नोटिस पब्लिश / सेव करें";
+    }
+};
+
+function listenToNotices() {
+    const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        window.cachedNotices = list;
+        renderAdminList(list);
+    });
+}
+
+function renderAdminList(list) {
+    const container = document.getElementById("adminNoticeList");
+    document.getElementById("adminNoticeCount").innerText = `${list.length} Notices`;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs text-[var(--muted)]">अभी कोई नोटिस पब्लिश नहीं हुआ है।</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] flex items-center justify-between gap-3";
+        div.innerHTML = `
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-[10px] font-extrabold text-blue-400">${item.category || "General"}</span>
+                    <span class="text-[10px] text-[var(--muted)]">• ${item.date || ""}</span>
+                </div>
+                <h4 class="text-xs font-extrabold truncate">${item.title || ""}</h4>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="loadForEdit('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 text-blue-400 text-[11px] font-extrabold hover:bg-blue-600 hover:text-white transition">✏️ Edit</button>
+                <button onclick="deleteNotice('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-[11px] font-extrabold hover:bg-rose-600 hover:text-white transition">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+window.loadForEdit = function(id) {
+    const item = window.cachedNotices.find(n => n.id === id);
+    if (!item) return;
+
+    document.getElementById("editNoticeId").value = item.id;
+    document.getElementById("noticeTitle").value = item.title || "";
+    document.getElementById("noticeCategory").value = item.category || "General";
+    document.getElementById("noticeDate").value = item.date || "";
+    document.getElementById("noticeIsNew").checked = !!item.isNew;
+    document.getElementById("noticeLink").value = item.link || "";
+    document.getElementById("noticeHtmlInput").value = item.htmlContent || "";
+
+    document.getElementById("editorHeading").innerText = "✏️ नोटिस संशोधित करें (Edit Mode)";
+    document.getElementById("cancelEditBtn").classList.remove("hidden");
+    window.updateLivePreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.resetEditor = function() {
+    document.getElementById("editNoticeId").value = "";
+    document.getElementById("noticeTitle").value = "";
+    document.getElementById("noticeLink").value = "";
+    document.getElementById("noticeHtmlInput").value = "";
+    document.getElementById("editorHeading").innerText = "➕ नया HTML नोटिस लिखें";
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    window.updateLivePreview();
+};
+
+window.deleteNotice = async function(id) {
+    if (!confirm("क्या आप इस नोटिस को स्थायी रूप से हटाना चाहते हैं?")) return;
+    try {
+        await deleteDoc(doc(db, "notices", id));
+        showStatus("🗑️ नोटिस हटा दिया गया।", true);
+    } catch (e) {
+        showStatus("❌ हटाने की अनुमति नहीं है।", false);
+    }
+};
+</script>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function insertHtmlTag(tag) {
+    const area = document.getElementById("noticeHtmlInput");
+    const start = area.selectionStart;
+    const end = area.selectionEnd;
+    const text = area.value;
+    area.value = text.substring(0, start) + tag + text.substring(end);
+    area.focus();
+    updateLivePreview();
+}
+
+function updateLivePreview() {
+    const val = document.getElementById("noticeHtmlInput").value.trim();
+    document.getElementById("liveHtmlPreview").innerHTML = val || '<p class="text-[var(--muted)]">यहाँ आपके HTML नोटिस का लाइव प्रीव्यू दिखेगा...</p>';
+}
+
+function insertSampleNotice() {
+    document.getElementById("noticeTitle").value = "वार्षिक माध्यमिक (10वीं) एवं इंटरमीडिएट (12वीं) परीक्षा के संबंध में आवश्यक सूचना";
+    document.getElementById("noticeHtmlInput").value = `<h3>बिहार विद्यालय परीक्षा समिति, पटना</h3>
+<p>सभी छात्र-छात्राओं, अभिभावकों एवं विद्यालय प्रधानों को सूचित किया जाता है कि आगामी वार्षिक परीक्षा का कार्यक्रम जारी कर दिया गया है।</p>
+<div style="padding:12px;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.12);border-radius:10px;margin:10px 0;">
+  📌 <b>महत्वपूर्ण निर्देश:</b> सभी परीक्षार्थी परीक्षा प्रारंभ होने से <b>30 मिनट पूर्व</b> अपने परीक्षा केंद्र पर अवश्य प्रवेश कर लें।
+</div>
+<table>
+  <tr><th>पाली (Shift)</th><th>प्रवेश समय</th><th>परीक्षा समय</th></tr>
+  <tr><td>प्रथम पाली (1st Shift)</td><td>09:00 AM तक</td><td>09:30 AM - 12:45 PM</td></tr>
+  <tr><td>द्वितीय पाली (2nd Shift)</td><td>01:30 PM तक</td><td>02:00 PM - 05:15 PM</td></tr>
+</table>
+<ul>
+  <li>प्रवेश पत्र (Admit Card) के साथ एक वैध फोटो पहचान पत्र साथ रखें।</li>
+  <li>परीक्षा कक्ष में कैलकुलेटर, मोबाइल एवं किसी भी प्रकार के इलेक्ट्रॉनिक उपकरण वर्जित हैं।</li>
+</ul>`;
+    updateLivePreview();
+}
+</script>
+
+</body>
+</html>
