@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<meta name="description" content="BSEB Official Admit Card Portal Class 8th to 12th">
+<title>BSEB Admit Card Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:95px;
+    transition:background .3s,color .3s;
+    overflow-x:hidden;
+}
+
+.perspective-stage{
+    perspective:1100px;
+}
+
+.card-3d{
+    transform-style:preserve-3d;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease;
+    box-shadow:0 12px 24px -6px rgba(15,23,42,.10),0 4px 8px -2px rgba(15,23,42,.06);
+}
+
+body.dark-mode .card-3d{
+    box-shadow:0 14px 28px -6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.pop-z{
+    transform:translateZ(20px);
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+/* Official Admit Card Table Styling */
+.admit-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+    margin-top:8px;
+}
+.admit-table th,.admit-table td{
+    border:1px solid var(--border);
+    padding:8px 10px;
+    text-align:left;
+}
+.admit-table th{
+    background:#1e3a8a;
+    color:#ffffff;
+    font-weight:800;
+}
+
+@media print{
+    body *{
+        visibility:hidden;
+    }
+    #printableAdmitCard, #printableAdmitCard *{
+        visibility:visible;
+    }
+    #printableAdmitCard{
+        position:absolute;
+        left:0;
+        top:0;
+        width:100%;
+        background:#ffffff !important;
+        color:#000000 !important;
+        border:2px solid #000000 !important;
+        box-shadow:none !important;
+    }
+    .no-print{
+        display:none !important;
+    }
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-5xl mx-auto">
+
+<!-- Top Header -->
+<header class="no-print sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="index.html" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg font-extrabold text-sky-400 shadow-sm" title="Back to Home">←</a>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR85M-RpzWbsEMOZ3jXpsKutWt7DwktZVveue8WOLNj-w&s" 
+         onerror="this.src='logo.png'" 
+         class="w-11 h-11 rounded-full object-contain shrink-0 border-2 border-sky-200 p-0.5 bg-white shadow-md" alt="BSEB Logo">
+
+    <div class="flex-1 min-w-0">
+        <h1 class="text-base sm:text-lg font-extrabold tracking-tight truncate">BSEB प्रवेश पत्र (Admit Card)</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-sky-400 tracking-wider truncate">CLASS 8TH TO 12TH ADMIT CARD PORTAL</p>
+    </div>
+
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg shadow-sm" title="Switch Theme">☀️</button>
+</header>
+
+<!-- 3D Hero Section -->
+<section class="no-print perspective-stage mx-3.5 mt-4">
+    <div class="rounded-[28px] overflow-hidden relative bg-gradient-to-br from-[#082f49] via-[#0369a1] to-[#1d4ed8] p-5 sm:p-7 text-white shadow-2xl card-3d">
+        <canvas id="heroCanvas3D" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+        <div class="relative z-10 pop-z max-w-xl">
+            <span class="inline-block px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[10px] font-bold tracking-wider uppercase mb-2 border border-white/20">
+                🪪 Official Admit Card Download
+            </span>
+            <h2 class="text-xl sm:text-3xl font-extrabold leading-tight">बिहार बोर्ड प्रवेश पत्र डाउनलोड करें</h2>
+            <p class="text-xs sm:text-sm text-sky-100 mt-1">अपना रोल कोड (Roll Code) और रोल नंबर (Roll Number) दर्ज करके आधिकारिक प्रवेश पत्र देखें व प्रिंट करें।</p>
+        </div>
+    </div>
+</section>
+
+<!-- Student Admit Card Search Form -->
+<section class="no-print px-3.5 mt-5">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-4 sm:p-6 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+                <h3 class="text-sm sm:text-base font-extrabold text-sky-400">🔍 अपना प्रवेश पत्र खोजें (Find Your Admit Card)</h3>
+                <p class="text-[11px] text-[var(--muted)]">रोल कोड एवं रोल नंबर या विद्यार्थी के नाम से खोजें</p>
+            </div>
+            <span id="totalAdmitsBadge" class="px-3 py-1 rounded-full bg-sky-500/15 text-sky-400 text-[11px] font-extrabold">Loading...</span>
+        </div>
+
+        <form onsubmit="searchAdmitCard(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold mb-1 text-[var(--muted)]">कक्षा चुनें (Class)</label>
+                <select id="searchClass" class="w-full px-3.5 py-3 rounded-2xl bg-[var(--card-sub)] text-[var(--text)] border border-[var(--border)] text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <option value="All">सभी कक्षाएं (All Classes)</option>
+                    <option value="Class 10">Class 10th (Matric)</option>
+                    <option value="Class 12">Class 12th (Inter)</option>
+                    <option value="Class 11">Class 11th</option>
+                    <option value="Class 9">Class 9th</option>
+                    <option value="Class 8">Class 8th</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold mb-1 text-[var(--muted)]">रोल कोड (Roll Code)</label>
+                <input type="text" id="searchRollCode" placeholder="e.g. 51001" class="w-full px-3.5 py-3 rounded-2xl bg-[var(--card-sub)] text-[var(--text)] border border-[var(--border)] text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold mb-1 text-[var(--muted)]">रोल नंबर / नाम (Roll No / Name)</label>
+                <input type="text" id="searchRollNo" placeholder="e.g. 2700101 or Name" class="w-full px-3.5 py-3 rounded-2xl bg-[var(--card-sub)] text-[var(--text)] border border-[var(--border)] text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                    🪪 Admit Card देखें
+                </button>
+            </div>
+        </form>
+
+        <!-- Quick Student Selector Chips (Populated from Firebase) -->
+        <div id="recentStudentsWrap" class="hidden mt-4 pt-3.5 border-t border-[var(--border)]">
+            <p class="text-[11px] font-bold text-[var(--muted)] mb-2">⚡ जारी किए गए प्रवेश पत्र (चुनकर सीधे खोलें):</p>
+            <div id="recentStudentChips" class="flex flex-wrap gap-2"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Admit Card Result / Display Container -->
+<section class="px-3.5 mt-5">
+    <div id="admitResultArea">
+        <div class="p-8 text-center bg-[var(--card)] border border-[var(--border)] rounded-3xl space-y-2">
+            <div class="text-3xl">🪪</div>
+            <h3 class="text-sm font-extrabold">प्रवेश पत्र देखने के लिए ऊपर रोल कोड और रोल नंबर दर्ज करें</h3>
+            <p class="text-xs text-[var(--muted)]">एडमिन द्वारा जारी किए गए सभी प्रवेश पत्र यहाँ तुरंत डाउनलोड और प्रिंट किए जा सकते हैं।</p>
+        </div>
+    </div>
+</section>
+
+<!-- Bottom Navigation -->
+<nav class="no-print fixed bottom-0 left-0 right-0 max-w-5xl mx-auto h-16 glass-nav border-t border-[var(--border)] shadow-2xl flex z-40 sm:rounded-t-2xl">
+    <a href="index.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">⌂</span>Home
+    </a>
+    <a href="syllabus.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">📖</span>Syllabus
+    </a>
+    <a href="exam.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">📅</span>Routine
+    </a>
+    <a href="admit_card.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-sky-400 font-bold text-[10px]">
+        <span class="text-xl">🪪</span>Admit Card
+    </a>
+    <a href="result.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">📊</span>Result
+    </a>
+</nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.allAdmitCards = [];
+
+onSnapshot(collection(db, "admit_cards"), (snap) => {
+    const list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+    window.allAdmitCards = list;
+    document.getElementById("totalAdmitsBadge").innerText = `${list.length} Active Records`;
+    renderQuickChips(list);
+}, () => {
+    document.getElementById("totalAdmitsBadge").innerText = "0 Active Records";
+});
+
+function renderQuickChips(list) {
+    const wrap = document.getElementById("recentStudentsWrap");
+    const chipBox = document.getElementById("recentStudentChips");
+    if (!list || list.length === 0) {
+        wrap.classList.add("hidden");
+        return;
+    }
+    wrap.classList.remove("hidden");
+    chipBox.innerHTML = "";
+    list.slice(0, 8).forEach(st => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "px-3 py-1.5 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] hover:border-sky-500 text-[11px] font-bold flex items-center gap-1.5 transition";
+        btn.innerHTML = `<span>👤 ${st.studentName || "Student"}</span> <span class="text-sky-400">(${st.rollCode || ""}-${st.rollNumber || ""})</span>`;
+        btn.onclick = () => {
+            document.getElementById("searchRollCode").value = st.rollCode || "";
+            document.getElementById("searchRollNo").value = st.rollNumber || "";
+            window.displayAdmitCard(st);
+        };
+        chipBox.appendChild(btn);
+    });
+}
+</script>
+
+<script>
+function searchAdmitCard(e) {
+    if (e) e.preventDefault();
+    const cls = document.getElementById("searchClass").value;
+    const code = (document.getElementById("searchRollCode").value || "").trim().toLowerCase();
+    const roll = (document.getElementById("searchRollNo").value || "").trim().toLowerCase();
+    const list = window.allAdmitCards || [];
+
+    if (!code && !roll) {
+        alert("कृपया रोल कोड या रोल नंबर दर्ज करें!");
+        return;
+    }
+
+    const found = list.find(item => {
+        const matchClass = cls === "All" || !item.className || item.className === cls;
+        const itemCode = (item.rollCode || "").toLowerCase();
+        const itemRoll = (item.rollNumber || "").toLowerCase();
+        const itemName = (item.studentName || "").toLowerCase();
+
+        const codeOk = !code || itemCode === code;
+        const rollOk = !roll || itemRoll === roll || itemName.includes(roll);
+        return matchClass && codeOk && rollOk;
+    });
+
+    const area = document.getElementById("admitResultArea");
+    if (!found) {
+        area.innerHTML = `
+            <div class="p-8 text-center bg-[var(--card)] border border-rose-500/40 rounded-3xl space-y-2">
+                <div class="text-3xl">⚠️</div>
+                <h3 class="text-sm font-extrabold text-rose-400">कोई प्रवेश पत्र नहीं मिला (No Admit Card Found)</h3>
+                <p class="text-xs text-[var(--muted)]">कृपया अपना रोल कोड और रोल नंबर दोबारा जांचें या एडमिन पैनल (admin/admit.html) से विद्यार्थी का डेटा जोड़ें।</p>
+            </div>
+        `;
+        return;
+    }
+
+    displayAdmitCard(found);
+}
+
+function displayAdmitCard(st) {
+    const area = document.getElementById("admitResultArea");
+    const photoSrc = st.photoUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+    const defaultSubjectsHtml = `
+        <table class="admit-table">
+            <tr>
+                <th>विषय (Subject)</th>
+                <th>परीक्षा तिथि (Exam Date)</th>
+                <th>पाली एवं समय (Shift & Time)</th>
+            </tr>
+            <tr>
+                <td><b>सभी निर्धारित विषय (As per Board Schedule)</b></td>
+                <td>${st.examDate || "फरवरी 2027"}</td>
+                <td>${st.shift || "प्रथम / द्वितीय पाली"}</td>
+            </tr>
+        </table>
+    `;
+
+    area.innerHTML = `
+        <div id="printableAdmitCard" class="bg-[var(--card)] border-2 border-sky-500/50 rounded-3xl overflow-hidden shadow-2xl">
+            <!-- Official Board Header -->
+            <div class="bg-gradient-to-r from-[#041b44] via-[#07429c] to-[#0369a1] p-4 sm:p-6 text-white border-b-2 border-amber-400 flex items-center justify-between gap-3">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR85M-RpzWbsEMOZ3jXpsKutWt7DwktZVveue8WOLNj-w&s" 
+                     class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white p-1 object-contain shrink-0 shadow-md" alt="BSEB Logo">
+                <div class="text-center flex-1">
+                    <h2 class="text-base sm:text-xl font-extrabold tracking-wide">बिहार विद्यालय परीक्षा समिति, पटना</h2>
+                    <p class="text-[10px] sm:text-xs font-bold text-sky-200 uppercase">BIHAR SCHOOL EXAMINATION BOARD, PATNA</p>
+                    <span class="inline-block mt-1.5 px-3.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] sm:text-xs font-extrabold uppercase">
+                        ${st.examTitle || "वार्षिक परीक्षा प्रवेश पत्र (FINAL ADMIT CARD)"}
+                    </span>
+                </div>
+                <div class="hidden sm:flex flex-col items-end text-right text-[10px] font-bold text-sky-100">
+                    <span>BSEB Unique ID:</span>
+                    <span class="font-mono text-xs text-amber-300">${st.bsebUniqueId || "BSEB-" + (st.rollNumber || "2027")}</span>
+                </div>
+            </div>
+
+            <!-- Student Details & Photo Grid -->
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                <div class="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[var(--card-sub)] p-4 rounded-2xl border border-[var(--border)]">
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">विद्यार्थी का नाम (Candidate Name):</span>
+                        <span class="font-extrabold text-sm sm:text-base text-sky-400">${st.studentName || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">कक्षा एवं संकाय (Class & Stream):</span>
+                        <span class="font-extrabold text-sm">${st.className || "Class 10"} ${st.stream && st.stream !== "All" ? " (" + st.stream + ")" : ""}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">पिता का नाम (Father's Name):</span>
+                        <span class="font-bold">${st.fatherName || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">माता का नाम (Mother's Name):</span>
+                        <span class="font-bold">${st.motherName || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">रोल कोड (Roll Code):</span>
+                        <span class="font-extrabold text-amber-400 text-sm font-mono">${st.rollCode || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">रोल क्रमांक (Roll Number):</span>
+                        <span class="font-extrabold text-amber-400 text-sm font-mono">${st.rollNumber || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">पंजीयन संख्या (Registration No.):</span>
+                        <span class="font-bold font-mono">${st.regNo || "—"}</span>
+                    </div>
+                    <div>
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">जन्म तिथि एवं लिंग (DOB / Gender):</span>
+                        <span class="font-bold">${st.dob || "—"} ${st.gender ? " / " + st.gender : ""}</span>
+                    </div>
+                    <div class="sm:col-span-2 pt-2 border-t border-[var(--border)]">
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">विद्यालय / महाविद्यालय (School / College):</span>
+                        <span class="font-bold">${st.schoolName || "—"}</span>
+                    </div>
+                    <div class="sm:col-span-2 pt-2 border-t border-[var(--border)]">
+                        <span class="text-[var(--muted)] block text-[10px] font-bold uppercase">परीक्षा केंद्र का नाम (Examination Center):</span>
+                        <span class="font-extrabold text-emerald-400 text-sm">${st.examCenter || "—"}</span>
+                    </div>
+                </div>
+
+                <!-- Candidate Photo & Sign Box -->
+                <div class="md:col-span-3 flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)]">
+                    <img src="${photoSrc}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" 
+                         class="w-28 h-32 object-cover rounded-xl border-2 border-sky-400 bg-white shadow-md" alt="Student Photo">
+                    <span class="mt-2 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30">
+                        ✔ Verified Candidate
+                    </span>
+                    <div class="w-full mt-3 pt-2 border-t border-dashed border-[var(--border)] text-center">
+                        <p class="text-[11px] font-serif italic font-bold">${st.studentName || ""}</p>
+                        <span class="text-[9px] text-[var(--muted)] uppercase font-bold">परीक्षार्थी का हस्ताक्षर</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject-wise Exam Schedule -->
+            <div class="px-4 sm:px-6 pb-4">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-sky-400 mb-1">📋 विषयवार परीक्षा कार्यक्रम (Subject & Exam Schedule):</h4>
+                <div class="overflow-x-auto">
+                    ${st.subjectsHtml || defaultSubjectsHtml}
+                </div>
+            </div>
+
+            <!-- Instructions & Controller Sign -->
+            <div class="px-4 sm:px-6 py-4 bg-[var(--card-sub)] border-t border-[var(--border)] text-[11px] space-y-2">
+                <p class="font-extrabold text-amber-400">📌 परीक्षार्थियों के लिए आवश्यक निर्देश:</p>
+                <ul class="list-disc pl-4 space-y-1 text-[var(--muted)]">
+                    <li>परीक्षा प्रारंभ होने से <b>30 मिनट पूर्व</b> परीक्षा केंद्र में प्रवेश करना अनिवार्य है। (${st.reportingTime || "प्रथम पाली: 09:00 AM, द्वितीय पाली: 01:30 PM"})</li>
+                    <li>प्रवेश पत्र के साथ अपना एक वैध फोटो पहचान पत्र (आधार कार्ड / स्कूल आईडी) अवश्य साथ रखें।</li>
+                    <li>परीक्षा कक्ष में मोबाइल फोन, कैलकुलेटर, ब्लूटूथ एवं किसी भी प्रकार के इलेक्ट्रॉनिक गैजेट ले जाना सख्त वर्जित है।</li>
+                </ul>
+
+                <div class="pt-4 mt-3 border-t border-dashed border-[var(--border)] flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <span class="text-[10px] text-[var(--muted)] font-bold">जारी तिथि (Issue Date): ${st.issueDate || "Official Release"}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-extrabold text-xs">परीक्षा नियंत्रक (Controller of Examinations)</p>
+                        <p class="text-[10px] text-[var(--muted)]">बिहार विद्यालय परीक्षा समिति, पटना</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="no-print p-4 bg-[var(--card)] border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
+                <button onclick="window.print()" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white text-xs font-extrabold shadow-lg flex items-center gap-2">
+                    🖨️ प्रवेश पत्र प्रिंट / PDF सेव करें
+                </button>
+                ${st.pdfLink ? `
+                    <a href="${st.pdfLink}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-2xl bg-emerald-600 text-white text-xs font-extrabold shadow-lg">
+                        📥 मूल पीडीएफ डाउनलोड करें ↗
+                    </a>
+                ` : ""}
+            </div>
+        </div>
+    `;
+}
+window.displayAdmitCard = displayAdmitCard;
+
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function create3DScene() {
+    const canvas = document.getElementById("heroCanvas3D");
+    if (!canvas || typeof THREE === "undefined") return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
+    camera.position.z = 4.2;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const geo = new THREE.OctahedronGeometry(1.35, 1);
+    const mat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.28
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.x = 1.8;
+    scene.add(mesh);
+
+    function resize() {
+        const w = canvas.clientWidth || window.innerWidth;
+        const h = canvas.clientHeight || window.innerHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.y += 0.006;
+        mesh.rotation.x += 0.003;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
+window.addEventListener("load", create3DScene);
+</script>
+
+</body>
+</html>
