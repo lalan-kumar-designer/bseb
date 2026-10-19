@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0,user-scalable=yes">
+<meta name="theme-color" content="#075bd8">
+<title>बिहार बोर्ड प्रश्न-पत्र प्रदर्शक</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+}
+
+:root{
+    --bg:#e2e8f0;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#f1f5f9;
+    --paper-bg:#ffffff;
+    --paper-text:#0f172a;
+}
+
+body.dark-mode{
+    --bg:#050b16;
+    --card:#0f172a;
+    --card-sub:#1e293b;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+    --paper-bg:#111c38;
+    --paper-text:#f8fafc;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transition:background .25s,color .25s;
+}
+
+.glass-bar{
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(16px);
+}
+
+body.dark-mode .glass-bar{
+    background:rgba(15,23,42,.95);
+}
+
+.ctrl-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+    border:1px solid var(--border);
+    transition:all .2s;
+}
+
+.ctrl-btn:active{
+    transform:scale(.93);
+}
+
+/* PDF.js Full Multi-Page Canvas Stack (Never shows browser 'Open' box) */
+.pdf-page-wrapper{
+    position:relative;
+    background:#ffffff;
+    border-radius:10px;
+    box-shadow:0 14px 36px rgba(0,0,0,.45);
+    overflow:hidden;
+    margin:0 auto 14px;
+    border:1px solid var(--border);
+}
+
+.pdf-page-canvas{
+    display:block;
+    width:100%;
+    height:auto;
+}
+
+.page-num-pill{
+    position:absolute;
+    bottom:10px;
+    right:12px;
+    background:rgba(15,23,42,.78);
+    color:#ffffff;
+    font-size:10px;
+    font-weight:800;
+    padding:3px 9px;
+    border-radius:999px;
+    backdrop-filter:blur(6px);
+    pointer-events:none;
+}
+
+/* Structured Question Sheet */
+.paper-sheet{
+    background:var(--paper-bg);
+    color:var(--paper-text);
+    border:1px solid var(--border);
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+    border-radius:16px;
+    transform-origin:top center;
+    transition:transform .2s ease;
+}
+
+.paper-content h1,.paper-content h2,.paper-content h3,.paper-content h4{
+    font-weight:800;
+    margin:14px 0 8px;
+}
+.paper-content p{
+    margin-bottom:10px;
+    line-height:1.7;
+}
+.paper-content ul,.paper-content ol{
+    padding-left:22px;
+    margin:10px 0;
+}
+.paper-content table{
+    width:100%;
+    border-collapse:collapse;
+    margin:12px 0;
+    font-size:13px;
+}
+.paper-content th,.paper-content td{
+    border:1px solid var(--border);
+    padding:9px 12px;
+    text-align:left;
+}
+.paper-content th{
+    background:#881337;
+    color:#ffffff;
+    font-weight:800;
+}
+.paper-content .q-card{
+    padding:14px;
+    border-radius:14px;
+    background:var(--card-sub);
+    border:1px solid var(--border);
+    margin:12px 0;
+}
+.paper-content .ans-badge{
+    display:inline-block;
+    margin-top:8px;
+    padding:4px 12px;
+    border-radius:8px;
+    background:rgba(16,185,129,.15);
+    color:#10b981;
+    font-weight:800;
+    font-size:12px;
+}
+
+/* RED-CIRCLED BUTTON MODE: Fullscreen + Landscape + NO extra content + ONLY Download button */
+body.pdf-landscape-fullscreen #topReaderHeader,
+body.pdf-landscape-fullscreen .page-num-pill{
+    display:none !important;
+}
+
+body.pdf-landscape-fullscreen #viewerWorkspace{
+    padding:4px !important;
+    background:#000000 !important;
+}
+
+body.pdf-landscape-fullscreen #documentStage,
+body.pdf-landscape-fullscreen #interactiveStage{
+    max-width:100% !important;
+    width:100% !important;
+}
+
+body.pdf-landscape-fullscreen #onlyDownloadBar{
+    display:flex !important;
+}
+
+/* Automatic Landscape Rotation when mobile screen is in Portrait orientation */
+body.force-landscape-rotate{
+    position:fixed !important;
+    top:0 !important;
+    left:100vw !important;
+    width:100dvh !important;
+    height:100vw !important;
+    transform:rotate(90deg) !important;
+    transform-origin:top left !important;
+    z-index:9999 !important;
+    overflow:hidden !important;
+}
+
+body.force-landscape-rotate #viewerWorkspace{
+    width:100dvh !important;
+    height:100vw !important;
+}
+</style>
+</head>
+
+<body class="dark-mode">
+
+<!-- Top Reader Header (Hidden completely when Red-Circled Fullscreen+Landscape button is clicked) -->
+<header id="topReaderHeader" class="glass-bar border-b border-[var(--border)] px-3 py-2.5 flex items-center justify-between gap-2 z-30 shadow-md">
+    <div class="flex items-center gap-2 min-w-0">
+        <a href="model_paper.html" class="w-9 h-9 rounded-xl ctrl-btn text-sm font-extrabold flex items-center justify-center shrink-0" title="Back">
+            ←
+        </a>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR85M-RpzWbsEMOZ3jXpsKutWt7DwktZVveue8WOLNj-w&s" 
+             onerror="this.src='logo.png'" 
+             class="w-8 h-8 rounded-full bg-white p-0.5 object-contain border border-rose-300 shrink-0" alt="BSEB">
+        <div class="min-w-0">
+            <span id="docMetaBadge" class="block text-[9px] font-extrabold text-rose-400 uppercase tracking-wider truncate">BSEB</span>
+            <h1 id="docTitle" class="text-xs font-extrabold truncate">लोड हो रहा है...</h1>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Zoom Controls -->
+        <div class="flex items-center gap-0.5 bg-[var(--card-sub)] px-1.5 py-1 rounded-xl border border-[var(--border)]">
+            <button type="button" onclick="adjustZoom(-0.2)" class="w-7 h-7 rounded-lg ctrl-btn text-xs font-extrabold" title="Zoom Out">➖</button>
+            <span id="zoomBadge" class="text-[11px] font-extrabold px-1.5 min-w-[42px] text-center">100%</span>
+            <button type="button" onclick="adjustZoom(0.2)" class="w-7 h-7 rounded-lg ctrl-btn text-xs font-extrabold" title="Zoom In">➕</button>
+        </div>
+
+        <!-- Red-Circled Button: Fullscreen + Landscape Mode (Hides all content, shows only PDF + Download) -->
+        <button type="button" id="redCircleFullscreenBtn" onclick="enterLandscapeFullscreen()" class="w-9 h-9 rounded-xl ctrl-btn flex items-center justify-center text-base font-extrabold border-2 border-rose-500 text-rose-400 shadow-md" title="Landscape + Fullscreen Mode">
+            ⛶
+        </button>
+
+        <button type="button" onclick="toggleTheme()" id="themeBtn" class="w-9 h-9 rounded-xl ctrl-btn flex items-center justify-center text-sm">☀️</button>
+    </div>
+</header>
+
+<!-- ONLY DOWNLOAD VIEW BAR (Visible in Landscape + Fullscreen Mode) -->
+<div id="onlyDownloadBar" class="hidden fixed bottom-4 right-4 z-50 items-center gap-2">
+    <button type="button" id="fullscreenDownloadBtn" onclick="savePaperOffline()" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white text-xs font-extrabold shadow-2xl border border-white/25 flex items-center gap-2">
+        <span>⬇</span>
+        <span id="downloadBtnLabel">Download</span>
+    </button>
+</div>
+
+<!-- Offline Save Toast -->
+<div id="offlineToast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md bg-slate-900/95 backdrop-blur-md text-white border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5 min-w-0">
+        <span id="offlineToastIcon" class="text-lg">📥</span>
+        <div class="min-w-0">
+            <p id="offlineToastText" class="text-xs font-extrabold truncate">ऑफ़लाइन सेव किया जा रहा है...</p>
+            <p id="offlineToastSub" class="text-[10px] text-emerald-400 truncate">Downloads पेज में बिना इंटरनेट खुलेगा</p>
+        </div>
+    </div>
+    <a href="downloads.html" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-extrabold shrink-0">
+        Downloads ↗
+    </a>
+</div>
+
+<!-- Main PDF.js Viewer Workspace -->
+<main id="viewerWorkspace" class="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-5 relative">
+
+    <!-- Loading Spinner -->
+    <div id="readerLoader" class="max-w-md mx-auto my-14 p-7 rounded-3xl bg-[var(--card)] border border-[var(--border)] text-center space-y-3 shadow-xl">
+        <div class="w-11 h-11 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <h2 id="loaderTitle" class="text-sm font-extrabold">प्रश्न-पत्र तैयार किया जा रहा है...</h2>
+        <p id="loaderStatus" class="text-xs text-[var(--muted)]">सभी पृष्ठ सीधे स्क्रीन पर खोले जा रहे हैं...</p>
+    </div>
+
+    <!-- 1. PDF.js Multi-Page Canvas Stage (Renders 100% on Canvas - NO iframe 'Open' box) -->
+    <div id="documentStage" class="hidden max-w-4xl mx-auto">
+        <div id="pdfPagesContainer" class="flex flex-col items-center w-full"></div>
+    </div>
+
+    <!-- 2. Structured Question Paper Stage -->
+    <div id="interactiveStage" class="hidden max-w-4xl mx-auto">
+        <div id="zoomablePaperSheet" class="paper-sheet p-5 sm:p-9">
+            <div class="text-center border-b-2 border-[var(--border)] pb-4 mb-4">
+                <span id="sheetSetCode" class="inline-block px-3 py-0.5 rounded-full bg-rose-500/15 text-rose-400 text-xs font-extrabold mb-1">SET - A</span>
+                <h2 class="text-lg sm:text-2xl font-extrabold">बिहार विद्यालय परीक्षा समिति, पटना</h2>
+                <h3 id="sheetMainHeading" class="text-sm sm:text-base font-extrabold text-rose-400 mt-1"></h3>
+                <div id="sheetSubMeta" class="flex flex-wrap items-center justify-center gap-4 mt-2 text-xs font-bold text-[var(--muted)]"></div>
+            </div>
+            <div id="sheetQuestionsBody" class="paper-content text-xs sm:text-sm"></div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// IndexedDB helper for Offline Saved PDFs
+function openOfflineDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open("bseb_offline_pdfs_db", 1);
+        req.onupgradeneeded = (e) => {
+            const idb = e.target.result;
+            if (!idb.objectStoreNames.contains("papers")) {
+                idb.createObjectStore("papers", { keyPath: "id" });
+            }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+window.openOfflineDB = openOfflineDB;
+
+async function getOfflinePaperById(id) {
+    try {
+        const idb = await openOfflineDB();
+        return await new Promise((resolve) => {
+            const tx = idb.transaction("papers", "readonly");
+            const req = tx.objectStore("papers").get(id);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => resolve(null);
+        });
+    } catch (e) {
+        return null;
+    }
+}
+
+async function bootPaperViewer() {
+    const params = new URLSearchParams(window.location.search);
+    const paperId = params.get("id");
+
+    // 1. Check Offline IndexedDB first (Works 100% offline without internet)
+    if (paperId) {
+        const offlineDoc = await getOfflinePaperById(paperId);
+        if (offlineDoc) {
+            window.initializePaperViewer(offlineDoc);
+            return;
+        }
+    }
+
+    // 2. Check sessionStorage active paper
+    const cached = sessionStorage.getItem("bseb_active_paper");
+    if (cached) {
+        try {
+            const parsed = JSON.parse(cached);
+            if (!paperId || parsed.id === paperId) {
+                window.initializePaperViewer(parsed);
+                return;
+            }
+        } catch (e) {}
+    }
+
+    // 3. Fetch from Firestore if ID is provided
+    if (paperId) {
+        try {
+            let snap = await getDoc(doc(db, "model_papers", paperId));
+            if (!snap.exists()) {
+                snap = await getDoc(doc(db, "materials", paperId));
+            }
+            if (snap.exists()) {
+                const data = snap.data();
+                window.initializePaperViewer({
+                    id: snap.id,
+                    title: data.title,
+                    subject: data.subject || "सामान्य विषय",
+                    className: data.className || "Class 10",
+                    stream: data.stream || "All",
+                    examYear: data.examYear || "2027",
+                    setCode: data.setCode || "Set-A",
+                    fullMarks: data.fullMarks || "100",
+                    duration: data.duration || "3 घंटे 15 मिनट",
+                    docSource: data.pdfLink || data.driveLink || data.url || "",
+                    questionsBody: data.htmlContent || (data.description ? `<p>${data.description}</p>` : "")
+                });
+                return;
+            }
+        } catch (err) {}
+    }
+
+    showViewerError("प्रश्न-पत्र उपलब्ध नहीं है। ऑफ़लाइन सेव किए गए पेपर्स Downloads में देखें।");
+}
+
+function showViewerError(msg) {
+    const loader = document.getElementById("readerLoader");
+    loader.innerHTML = `
+        <div class="text-3xl">📄</div>
+        <h3 class="text-sm font-extrabold text-rose-400">${msg}</h3>
+        <div class="flex flex-wrap justify-center gap-2 pt-2">
+            <a href="downloads.html" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold">
+                📂 ऑफ़लाइन Downloads खोलें
+            </a>
+            <a href="model_paper.html" class="px-4 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-extrabold">
+                ← वापस जाएं
+            </a>
+        </div>
+    `;
+}
+
+bootPaperViewer();
+</script>
+
+<script>
+// Configure PDF.js Worker
+if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+let currentZoom = 1.0;
+let pdfDocInstance = null;
+let rawPdfBytesCache = null;
+let renderedPageSnapshots = [];
+let activePaperData = null;
+
+function extractDriveFileId(url) {
+    if (!url) return null;
+    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1 && m1[1]) return m1[1];
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2 && m2[1]) return m2[1];
+    return null;
+}
+
+// Multi-proxy binary PDF fetcher so PDF.js ALWAYS gets raw %PDF bytes and NEVER uses an iframe
+async function fetchPdfBinaryBytes(sourceUrl) {
+    const driveId = extractDriveFileId(sourceUrl);
+    const directTarget = driveId
+        ? `https://drive.google.com/uc?export=download&id=${driveId}`
+        : new URL(sourceUrl, window.location.href).href;
+
+    const routes = [
+        directTarget,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(directTarget)}`,
+        `https://corsproxy.io/?${encodeURIComponent(directTarget)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(directTarget)}`
+    ];
+
+    for (const route of routes) {
+        try {
+            const response = await fetch(route);
+            if (!response.ok) continue;
+            const buffer = await response.arrayBuffer();
+            if (buffer && buffer.byteLength > 120) {
+                const bytes = new Uint8Array(buffer);
+                // Check for %PDF header within first 16 bytes
+                let magicStr = "";
+                for (let i = 0; i < Math.min(16, bytes.length); i++) {
+                    magicStr += String.fromCharCode(bytes[i]);
+                }
+                if (magicStr.includes("%PDF")) {
+                    return bytes;
+                }
+            }
+        } catch (err) {}
+    }
+    return null;
+}
+
+window.initializePaperViewer = async function(paper) {
+    activePaperData = paper;
+
+    const metaText = `${paper.className || "Class 10"} • ${paper.subject || ""} (${paper.examYear || "2027"})`;
+    document.getElementById("docMetaBadge").innerText = metaText;
+    document.getElementById("docTitle").innerText = paper.title || "बिहार बोर्ड प्रश्न-पत्र";
+
+    document.getElementById("sheetSetCode").innerText = `${paper.setCode || "SET-A"} • ${paper.examYear || "2027"}`;
+    document.getElementById("sheetMainHeading").innerText = `${paper.title || ""} — ${paper.subject || ""}`;
+    document.getElementById("sheetSubMeta").innerHTML = `
+        <span>🎓 कक्षा: <b class="text-[var(--text)]">${paper.className || "Class 10"}</b></span>
+        <span>🎯 पूर्णांक: <b class="text-[var(--text)]">${paper.fullMarks || "100"}</b></span>
+        <span>⏱️ समय: <b class="text-[var(--text)]">${paper.duration || "3 घंटे 15 मिनट"}</b></span>
+    `;
+
+    // 1. Offline Saved PDF Bytes in IndexedDB
+    if (paper.pdfBytes) {
+        rawPdfBytesCache = paper.pdfBytes instanceof Uint8Array
+            ? paper.pdfBytes
+            : new Uint8Array(paper.pdfBytes);
+        const ok = await renderPdfFromSource({ data: rawPdfBytesCache.slice(0) });
+        if (ok) return;
+    }
+
+    // 2. Offline Saved Page Snapshots in IndexedDB
+    if (paper.pageSnapshots && paper.pageSnapshots.length > 0) {
+        renderSavedSnapshotsToCanvas(paper.pageSnapshots);
+        return;
+    }
+
+    const hasDoc = !!(paper.docSource && paper.docSource.trim());
+    const hasQuestions = !!(paper.questionsBody && paper.questionsBody.trim());
+
+    if (hasDoc) {
+        await loadAndRenderFullPdf(paper.docSource.trim(), hasQuestions ? paper.questionsBody : "");
+    } else if (hasQuestions) {
+        showStructuredSheet(paper.questionsBody);
+    } else {
+        document.getElementById("readerLoader").classList.add("hidden");
+    }
+};
+
+function showStructuredSheet(htmlContent) {
+    document.getElementById("readerLoader").classList.add("hidden");
+    document.getElementById("documentStage").classList.add("hidden");
+    document.getElementById("sheetQuestionsBody").innerHTML = htmlContent;
+    document.getElementById("interactiveStage").classList.remove("hidden");
+}
+
+async function loadAndRenderFullPdf(sourceUrl, fallbackHtml) {
+    const driveId = extractDriveFileId(sourceUrl);
+
+    // Try direct PDF.js URL load first if not a Google Drive view link
+    if (!driveId && window.pdfjsLib) {
+        const directOk = await renderPdfFromSource({ url: sourceUrl });
+        if (directOk) {
+            try {
+                const data = await pdfDocInstance.getData();
+                if (data) rawPdfBytesCache = new Uint8Array(data);
+            } catch (e) {}
+            return;
+        }
+    }
+
+    // Fetch raw PDF binary bytes through multi-proxy fetcher and render on PDF.js Canvas
+    const bytes = await fetchPdfBinaryBytes(sourceUrl);
+    if (bytes && window.pdfjsLib) {
+        rawPdfBytesCache = bytes;
+        const ok = await renderPdfFromSource({ data: bytes.slice(0) });
+        if (ok) return;
+    }
+
+    // If structured questions exist, show them
+    if (fallbackHtml) {
+        showStructuredSheet(fallbackHtml);
+        return;
+    }
+
+    // Render clean Canvas Notice Sheet if remote PDF link is unreachable
+    showStructuredSheet(`
+        <div class="q-card text-center py-6 space-y-2">
+            <p class="font-extrabold text-sm text-rose-400">प्रश्न-पत्र लोड करने के लिए कृपया इंटरनेट कनेक्शन जांचें या एडमिन से डायरेक्ट PDF लिंक अपडेट करें।</p>
+        </div>
+    `);
+}
+
+async function renderPdfFromSource(sourceConfig) {
+    try {
+        const loadingTask = window.pdfjsLib.getDocument({
+            ...sourceConfig,
+            cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+            cMapPacked: true,
+            standardFontDataUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/"
+        });
+        pdfDocInstance = await loadingTask.promise;
+        await renderAllPdfPages();
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+// Renders EVERY page of the PDF onto HTML5 <canvas> elements so the full PDF is visible
+async function renderAllPdfPages() {
+    if (!pdfDocInstance) return;
+
+    const container = document.getElementById("pdfPagesContainer");
+    container.innerHTML = "";
+    document.getElementById("interactiveStage").classList.add("hidden");
+    document.getElementById("documentStage").classList.remove("hidden");
+    document.getElementById("readerLoader").classList.add("hidden");
+
+    const totalPages = pdfDocInstance.numPages;
+    const isForcedLandscape = document.body.classList.contains("force-landscape-rotate");
+    const isImmersive = document.body.classList.contains("pdf-landscape-fullscreen");
+
+    // Calculate available width in normal vs landscape mode
+    const rawAvailableWidth = isForcedLandscape
+        ? window.innerHeight - 16
+        : (isImmersive ? window.innerWidth - 16 : Math.min(window.innerWidth - 20, 900));
+
+    const targetWidth = Math.max(300, rawAvailableWidth);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.25);
+
+    renderedPageSnapshots = [];
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await pdfDocInstance.getPage(pageNum);
+        const baseViewport = page.getViewport({ scale: 1 });
+        const fitScale = (targetWidth / baseViewport.width) * currentZoom;
+        const viewport = page.getViewport({ scale: fitScale });
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "pdf-page-wrapper";
+        wrapper.style.width = `${Math.floor(viewport.width)}px`;
+
+        const canvas = document.createElement("canvas");
+        canvas.className = "pdf-page-canvas";
+        canvas.width = Math.floor(viewport.width * dpr);
+        canvas.height = Math.floor(viewport.height * dpr);
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+        const pill = document.createElement("span");
+        pill.className = "page-num-pill";
+        pill.innerText = `${pageNum} / ${totalPages}`;
+
+        wrapper.appendChild(canvas);
+        wrapper.appendChild(pill);
+        container.appendChild(wrapper);
+
+        const ctx = canvas.getContext("2d");
+        ctx.scale(dpr, dpr);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Cache first 15 pages as compressed JPEG snapshots for guaranteed instant offline fallback
+        if (pageNum <= 15) {
+            try {
+                renderedPageSnapshots.push(canvas.toDataURL("image/jpeg", 0.82));
+            } catch (e) {}
+        }
+    }
+}
+
+function renderSavedSnapshotsToCanvas(snapshots) {
+    const container = document.getElementById("pdfPagesContainer");
+    container.innerHTML = "";
+    document.getElementById("interactiveStage").classList.add("hidden");
+    document.getElementById("documentStage").classList.remove("hidden");
+    document.getElementById("readerLoader").classList.add("hidden");
+
+    snapshots.forEach((dataUrl, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "pdf-page-wrapper w-full max-w-4xl";
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.className = "w-full h-auto block";
+        const pill = document.createElement("span");
+        pill.className = "page-num-pill";
+        pill.innerText = `${idx + 1} / ${snapshots.length}`;
+        wrapper.appendChild(img);
+        wrapper.appendChild(pill);
+        container.appendChild(wrapper);
+    });
+}
+
+function adjustZoom(delta) {
+    currentZoom = Math.min(2.4, Math.max(0.6, +(currentZoom + delta).toFixed(2)));
+    document.getElementById("zoomBadge").innerText = `${Math.round(currentZoom * 100)}%`;
+
+    if (pdfDocInstance) {
+        renderAllPdfPages();
+    }
+
+    const sheet = document.getElementById("zoomablePaperSheet");
+    if (sheet) {
+        sheet.style.transform = `scale(${currentZoom})`;
+    }
+}
+
+// RED-CIRCLED BUTTON (`⛶`): Enters Fullscreen + Landscape Mode, hides all other UI, shows ONLY PDF + Download button
+async function enterLandscapeFullscreen() {
+    document.body.classList.add("pdf-landscape-fullscreen");
+
+    // Push history state so mobile Back button cleanly exits fullscreen if needed
+    try {
+        history.pushState({ pdfFullscreen: true }, "");
+    } catch (e) {}
+
+    // 1. Request Browser Fullscreen
+    try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+        }
+    } catch (e) {}
+
+    // 2. Request Hardware Landscape Orientation Lock
+    let hardwareLocked = false;
+    try {
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock("landscape");
+            hardwareLocked = true;
+        }
+    } catch (e) {}
+
+    // 3. Apply CSS Landscape Rotation if device is still in Portrait
+    syncLandscapeOrientation(hardwareLocked);
+
+    if (pdfDocInstance) {
+        setTimeout(() => renderAllPdfPages(), 200);
+    }
+}
+
+function syncLandscapeOrientation(hardwareLocked) {
+    if (!document.body.classList.contains("pdf-landscape-fullscreen")) {
+        document.body.classList.remove("force-landscape-rotate");
+        return;
+    }
+    if (!hardwareLocked && window.innerHeight > window.innerWidth) {
+        document.body.classList.add("force-landscape-rotate");
+    } else {
+        document.body.classList.remove("force-landscape-rotate");
+    }
+}
+
+window.addEventListener("resize", () => {
+    if (document.body.classList.contains("pdf-landscape-fullscreen")) {
+        syncLandscapeOrientation(false);
+    }
+});
+
+window.addEventListener("popstate", () => {
+    if (document.body.classList.contains("pdf-landscape-fullscreen")) {
+        exitLandscapeFullscreen();
+    }
+});
+
+document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && document.body.classList.contains("pdf-landscape-fullscreen")) {
+        // Keep landscape view active on mobile browsers where fullscreen API isn't supported unless back is pressed
+    }
+});
+
+async function exitLandscapeFullscreen() {
+    document.body.classList.remove("pdf-landscape-fullscreen", "force-landscape-rotate");
+
+    try {
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
+    } catch (e) {}
+
+    try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+        }
+    } catch (e) {}
+
+    if (pdfDocInstance) {
+        setTimeout(() => renderAllPdfPages(), 180);
+    }
+}
+
+// DOWNLOAD BUTTON ACTION: Saves PDF Offline to IndexedDB + localStorage for downloads.html
+async function savePaperOffline() {
+    if (!activePaperData) return;
+
+    const btnLabel = document.getElementById("downloadBtnLabel");
+    const toast = document.getElementById("offlineToast");
+    const toastText = document.getElementById("offlineToastText");
+    const toastSub = document.getElementById("offlineToastSub");
+    const toastIcon = document.getElementById("offlineToastIcon");
+
+    if (btnLabel) btnLabel.innerText = "Saving...";
+    toast.classList.remove("hidden");
+    toastIcon.innerText = "⏳";
+    toastText.innerText = "ऑफ़लाइन मेमोरी में सेव किया जा रहा है...";
+    toastSub.innerText = "कृपया प्रतीक्षा करें...";
+
+    try {
+        if (!rawPdfBytesCache && activePaperData.docSource) {
+            rawPdfBytesCache = await fetchPdfBinaryBytes(activePaperData.docSource);
+        }
+
+        const recordId = activePaperData.id || ("paper_" + Date.now());
+        const record = {
+            id: recordId,
+            title: activePaperData.title || "बिहार बोर्ड प्रश्न-पत्र",
+            subject: activePaperData.subject || "सामान्य विषय",
+            className: activePaperData.className || "Class 10",
+            stream: activePaperData.stream || "All",
+            examYear: activePaperData.examYear || "2027",
+            setCode: activePaperData.setCode || "Set-A",
+            fullMarks: activePaperData.fullMarks || "100",
+            duration: activePaperData.duration || "3 घंटे 15 मिनट",
+            docSource: activePaperData.docSource || "",
+            questionsBody: activePaperData.questionsBody || "",
+            pdfBytes: rawPdfBytesCache ? rawPdfBytesCache.buffer.slice(0) : null,
+            pageSnapshots: renderedPageSnapshots.length > 0 ? renderedPageSnapshots : null,
+            savedAt: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        };
+
+        // 1. Save full PDF bytes + page snapshots in IndexedDB
+        if (window.openOfflineDB) {
+            const idb = await window.openOfflineDB();
+            await new Promise((resolve, reject) => {
+                const tx = idb.transaction("papers", "readwrite");
+                tx.objectStore("papers").put(record);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        // 2. Save metadata in localStorage index for downloads.html
+        const existingIndex = JSON.parse(localStorage.getItem("bseb_offline_index") || "[]");
+        const filteredIndex = existingIndex.filter(x => x.id !== recordId);
+        filteredIndex.unshift({
+            id: record.id,
+            title: record.title,
+            subject: record.subject,
+            className: record.className,
+            stream: record.stream,
+            examYear: record.examYear,
+            setCode: record.setCode,
+            savedAt: record.savedAt
+        });
+        localStorage.setItem("bseb_offline_index", JSON.stringify(filteredIndex));
+
+        if (btnLabel) btnLabel.innerText = "Saved ✔";
+        toastIcon.innerText = "✅";
+        toastText.innerText = "ऑफ़लाइन सेव हो गया! (Saved to Downloads)";
+        toastSub.innerText = "अब बिना इंटरनेट के Downloads में पढ़ें";
+        setTimeout(() => {
+            toast.classList.add("hidden");
+            if (btnLabel) btnLabel.innerText = "Download";
+        }, 4500);
+    } catch (err) {
+        if (btnLabel) btnLabel.innerText = "Download";
+        toastIcon.innerText = "⚠️";
+        toastText.innerText = "सेव करने में त्रुटि आई";
+        setTimeout(() => toast.classList.add("hidden"), 3000);
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+</script>
+
+</body>
+</html>

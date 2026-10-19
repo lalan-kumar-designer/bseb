@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>ऑफ़लाइन डाउनलोड्स (Offline Saved Papers) - BSEB</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:95px;
+    transition:background .3s,color .3s;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-5xl mx-auto">
+
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="index.html" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg font-extrabold text-emerald-400 shadow-sm">←</a>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR85M-RpzWbsEMOZ3jXpsKutWt7DwktZVveue8WOLNj-w&s" 
+         onerror="this.src='logo.png'" 
+         class="w-11 h-11 rounded-full object-contain shrink-0 border-2 border-emerald-200 p-0.5 bg-white shadow-md" alt="BSEB">
+    <div class="flex-1 min-w-0">
+        <h1 class="text-base sm:text-lg font-extrabold truncate">ऑफ़लाइन डाउनलोड्स (Offline Saved)</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-emerald-400 tracking-wider truncate">बिना इंटरनेट के सेव किए गए प्रश्न-पत्र पढ़ें</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+</header>
+
+<section class="mx-3.5 mt-4">
+    <div class="rounded-[26px] bg-gradient-to-br from-[#022c22] via-[#047857] to-[#1d4ed8] p-5 sm:p-6 text-white shadow-xl flex items-center justify-between gap-4">
+        <div>
+            <span class="inline-block px-3 py-0.5 rounded-full bg-white/15 text-[10px] font-bold uppercase mb-1.5 border border-white/20">
+                ⬇ 100% Offline Reader Ready
+            </span>
+            <h2 class="text-lg sm:text-2xl font-extrabold">सेव किए गए प्रश्न-पत्र एवं फाइलें</h2>
+            <p class="text-xs text-emerald-100 mt-1">यहाँ सेव किए गए सभी प्रश्न-पत्र बिना इंटरनेट के सीधे फुल-स्क्रीन और लैंडस्केप मोड में खुलते हैं।</p>
+        </div>
+        <a href="model_paper.html" class="px-4 py-2.5 rounded-2xl bg-white text-emerald-900 text-xs font-extrabold shrink-0 shadow-lg">
+            + और जोड़ें
+        </a>
+    </div>
+</section>
+
+<!-- Offline Saved Files List -->
+<section class="px-3.5 mt-5">
+    <div class="flex items-center justify-between mb-3 px-1">
+        <h3 class="text-sm sm:text-base font-extrabold">📂 आपकी ऑफ़लाइन लाइब्रेरी</h3>
+        <span id="offlineCountBadge" class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-extrabold">0 Saved</span>
+    </div>
+
+    <div id="offlineFilesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+</section>
+
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-5xl mx-auto h-16 glass-nav border-t border-[var(--border)] shadow-2xl flex z-40 sm:rounded-t-2xl">
+    <a href="index.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">⌂</span>Home
+    </a>
+    <a href="model_paper.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">📄</span>Model Paper
+    </a>
+    <a href="downloads.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-emerald-400 font-bold text-[10px]">
+        <span class="text-xl">⬇📂</span>Downloads
+    </a>
+    <a href="result.html" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--muted)] font-semibold text-[10px]">
+        <span class="text-xl">📊</span>Result
+    </a>
+</nav>
+
+<script>
+function openOfflineDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open("bseb_offline_pdfs_db", 1);
+        req.onupgradeneeded = (e) => {
+            const idb = e.target.result;
+            if (!idb.objectStoreNames.contains("papers")) {
+                idb.createObjectStore("papers", { keyPath: "id" });
+            }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function loadOfflineSavedPapers() {
+    const grid = document.getElementById("offlineFilesGrid");
+    let items = [];
+
+    try {
+        const idb = await openOfflineDB();
+        items = await new Promise((resolve) => {
+            const tx = idb.transaction("papers", "readonly");
+            const req = tx.objectStore("papers").getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => resolve([]);
+        });
+    } catch (e) {}
+
+    if (!items || items.length === 0) {
+        items = JSON.parse(localStorage.getItem("bseb_offline_index") || "[]");
+    }
+
+    document.getElementById("offlineCountBadge").innerText = `${items.length} Saved`;
+
+    if (items.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] text-center space-y-3">
+                <div class="text-3xl">📥</div>
+                <h4 class="text-sm font-extrabold">अभी कोई ऑफ़लाइन फाइल सेव नहीं है</h4>
+                <p class="text-xs text-[var(--muted)]">किसी भी मॉडल प्रश्न-पत्र को खोलकर <b>"⛶"</b> (Full Screen) में <b>"⬇ Download"</b> बटन दबाएं, वह यहाँ ऑफ़लाइन पढ़ने के लिए सेव हो जाएगा।</p>
+                <a href="model_paper.html" class="inline-block px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 text-white text-xs font-extrabold shadow-lg">
+                    📄 मॉडल प्रश्न-पत्र देखें
+                </a>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = "";
+    items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "p-4 rounded-3xl bg-[var(--card)] border border-[var(--border)] flex flex-col justify-between gap-3 shadow-md";
+        card.innerHTML = `
+            <div>
+                <div class="flex items-center justify-between gap-2 mb-1.5">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold">✔ ऑफ़लाइन उपलब्ध</span>
+                    <span class="text-[10px] font-bold text-[var(--muted)]">📅 ${item.savedAt || ""}</span>
+                </div>
+                <span class="text-[11px] font-extrabold text-rose-400 uppercase">${item.className || "Class 10"} • ${item.subject || ""}</span>
+                <h4 class="text-sm font-extrabold mt-0.5">${item.title || "बिहार बोर्ड प्रश्न-पत्र"}</h4>
+            </div>
+            <div class="pt-3 border-t border-[var(--border)] flex items-center gap-2">
+                <a href="pdf_viewer.html?id=${encodeURIComponent(item.id)}" class="flex-1 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-extrabold text-center shadow">
+                    📖 ऑफ़लाइन खोलें (Open)
+                </a>
+                <button type="button" onclick="removeOfflinePaper('${item.id}')" class="px-3 py-2.5 rounded-2xl inactive-btn text-rose-400 text-xs font-extrabold" title="Delete">
+                    🗑️
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function removeOfflinePaper(id) {
+    try {
+        const idb = await openOfflineDB();
+        await new Promise((resolve) => {
+            const tx = idb.transaction("papers", "readwrite");
+            tx.objectStore("papers").delete(id);
+            tx.oncomplete = () => resolve();
+        });
+    } catch (e) {}
+
+    const existing = JSON.parse(localStorage.getItem("bseb_offline_index") || "[]");
+    localStorage.setItem("bseb_offline_index", JSON.stringify(existing.filter(x => x.id !== id)));
+    loadOfflineSavedPapers();
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+window.addEventListener("load", loadOfflineSavedPapers);
+</script>
+
+</body>
+</html>
