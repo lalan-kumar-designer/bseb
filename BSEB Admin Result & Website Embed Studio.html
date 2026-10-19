@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>BSEB Admin Result Studio (2023-2026)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:80px;
+    transition:background .3s,color .3s;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+.preview-marks table{
+    width:100%;
+    border-collapse:collapse;
+    margin:8px 0;
+    font-size:11.5px;
+}
+.preview-marks th,.preview-marks td{
+    border:1px solid var(--border);
+    padding:7px;
+    text-align:center;
+}
+.preview-marks th:first-child,.preview-marks td:first-child{
+    text-align:left;
+}
+.preview-marks th{
+    background:#064e3b;
+    color:#ffffff;
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-6xl mx-auto">
+
+<!-- Header -->
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="../result.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-emerald-400 shadow-sm">← Result Page</a>
+    <a href="../admin.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-blue-400 shadow-sm">⚙️ Main Admin</a>
+    <div class="flex-1 min-w-0">
+        <h1 class="text-sm sm:text-lg font-extrabold truncate">📊 BSEB Admin Result Studio (2023–2026)</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-emerald-400 truncate">MATRIC & INTER MARKSHEET + IN-PAGE WEBSITE EMBED MANAGER</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+    <button id="logoutBtn" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold shadow-md">Sign Out</button>
+</header>
+
+<!-- Admin Login Gate -->
+<section id="authGate" class="max-w-md mx-auto mt-10 px-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">📊</div>
+            <h2 class="text-lg font-extrabold">Admin Result Studio Login</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">लॉग इन करके मैट्रिक एवं इंटर (2023, 2024, 2025, 2026) का रिजल्ट व एम्बेडेड वेबसाइट सेट करें।</p>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-bold text-center"></div>
+
+        <form id="loginForm" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">Admin Email ID</label>
+                <input type="email" id="adminEmail" required placeholder="admin@bseb.ac.in" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password</label>
+                <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs sm:text-sm font-extrabold shadow-lg">
+                Unlock Result Studio
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Main Admin Workspace -->
+<main id="adminWorkspace" class="hidden px-3.5 mt-5 space-y-5">
+
+    <!-- Top Card: Official Website Embed Link Controller (No Redirect, Loads inside result.html iframe) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+            <div>
+                <h2 class="text-sm sm:text-base font-extrabold text-sky-400">🌐 बिहार बोर्ड आधिकारिक वेबसाइट एम्बेड सेटिंग (In-Page Website Embed URL)</h2>
+                <p class="text-[11px] text-[var(--muted)]">यहाँ सेट किया गया लिंक <code class="text-emerald-400">result.html</code> के अंदर ही एम्बेड (iframe) में खुलेगा, यूजर को बाहर रीडायरेक्ट नहीं करेगा।</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-3.5 items-end">
+            <div>
+                <label class="block text-xs font-bold mb-1">श्रेणी (Category)</label>
+                <select id="embedCategory" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    <option value="Matriculation">Matriculation (10th)</option>
+                    <option value="Intermediate">Intermediate (12th)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">वर्ष (Year)</label>
+                <select id="embedYear" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">आधिकारिक रिजल्ट सर्वर URL (Embed Link)</label>
+                <input type="url" id="embedServerUrl" value="https://results.biharboardonline.com/" placeholder="https://results.biharboardonline.com/" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+            </div>
+            <div>
+                <button type="button" onclick="saveEmbedServerConfig()" class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 text-white text-xs font-extrabold shadow-md">
+                    💾 Embed URL सेव करें
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Grid: Left Marksheet Creator | Right Published Results List -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left Column: Student Marksheet Result Builder -->
+        <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+                <div>
+                    <h2 id="editorHeading" class="text-base sm:text-lg font-extrabold">➕ विद्यार्थी का रिजल्ट / मार्कशीट जोड़ें (2023–2026)</h2>
+                    <p class="text-[11px] text-[var(--muted)]">मैट्रिक (10th) या इंटर (12th) के किसी भी वर्ष का परिणाम यहाँ से पब्लिश करें।</p>
+                </div>
+                <button type="button" onclick="fillSampleResult()" class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px] font-extrabold hover:bg-amber-500 hover:text-slate-950 transition">
+                    ✨ Sample Marksheet भरें
+                </button>
+            </div>
+
+            <input type="hidden" id="editResultId">
+
+            <div class="space-y-3.5">
+                <!-- Category, Year, Stream, Status -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-emerald-400">श्रेणी (Category)*</label>
+                        <select id="resCategory" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                            <option value="Matriculation">Matriculation (10th)</option>
+                            <option value="Intermediate">Intermediate (12th)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-sky-400">परीक्षा वर्ष (Year)*</label>
+                        <select id="resYear" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">संकाय (Stream)</label>
+                        <select id="resStream" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                            <option value="General (Matric)">General (10th Matric)</option>
+                            <option value="Science">Science (12th)</option>
+                            <option value="Arts">Arts (12th)</option>
+                            <option value="Commerce">Commerce (12th)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">परिणाम (Status)</label>
+                        <select id="resStatus" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                            <option value="PASS">PASS (उत्तीर्ण)</option>
+                            <option value="1st Division">1st Division</option>
+                            <option value="COMPATRMENTAL">COMPARTMENTAL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Roll Code, Roll No, Reg No -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-amber-400">रोल कोड (Roll Code)*</label>
+                        <input type="text" id="resRollCode" placeholder="e.g. 51001" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-amber-400">रोल नंबर (Roll Number)*</label>
+                        <input type="text" id="resRollNo" placeholder="e.g. 2600101" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">पंजीयन संख्या (Reg. No)</label>
+                        <input type="text" id="resRegNo" placeholder="51001-R-0142/25" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                    </div>
+                </div>
+
+                <!-- Student Name, Father, Mother -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-emerald-400">विद्यार्थी का नाम (Student Name)*</label>
+                        <input type="text" id="resStudentName" placeholder="e.g. ADITYA KUMAR" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">पिता का नाम (Father's Name)</label>
+                        <input type="text" id="resFatherName" placeholder="e.g. VINOD PRASAD" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">माता का नाम (Mother's Name)</label>
+                        <input type="text" id="resMotherName" placeholder="e.g. KAVITA DEVI" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                    </div>
+                </div>
+
+                <!-- School Name, Total Marks, Max Marks, Division -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold mb-1">विद्यालय / कॉलेज का नाम (School / College)</label>
+                        <input type="text" id="resSchool" placeholder="+2 Zila School, Patna" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-emerald-400">कुल प्राप्तांक (Total)*</label>
+                        <input type="number" id="resTotalMarks" placeholder="435" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">श्रेणी (Division)</label>
+                        <select id="resDivision" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                            <option value="1st Division">1st Division</option>
+                            <option value="2nd Division">2nd Division</option>
+                            <option value="3rd Division">3rd Division</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quick Subject Marks Row Builder -->
+                <div class="p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] space-y-2.5">
+                    <span class="text-xs font-extrabold text-emerald-400 block">⚡ विषयवार अंक जोड़ें (Subject Marks Row Builder):</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        <input type="text" id="subName" placeholder="विषय (e.g. MATHEMATICS)" class="col-span-2 sm:col-span-2 px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                        <input type="number" id="subTheory" placeholder="Theory (e.g. 75)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                        <input type="number" id="subPrac" placeholder="Prac/Int (e.g. 18)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                        <input type="number" id="subTotal" placeholder="Total (e.g. 93D)" class="px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    </div>
+                    <button type="button" onclick="appendMarksRow()" class="w-full py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold hover:bg-emerald-600 hover:text-white transition">
+                        + मार्कशीट तालिका में विषय के अंक जोड़ें (Add Subject Row)
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-sky-400 mb-1">मार्कशीट तालिका HTML (Subject Marks HTML):</label>
+                    <textarea id="resMarksHtml" rows="5" oninput="updateMarksPreview()" placeholder="<table class='marks-table'>...</table>" class="w-full p-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold text-emerald-400 mb-1">👁️ मार्कशीट तालिका लाइव प्रीव्यू (Live Marksheet Preview):</label>
+                    <div id="marksPreview" class="preview-marks p-3.5 rounded-2xl bg-[var(--card-sub)] border border-dashed border-[var(--border)] text-xs overflow-x-auto">
+                        <p class="text-[var(--muted)]">यहाँ विषयवार अंकों की तालिका का प्रीव्यू दिखेगा...</p>
+                    </div>
+                </div>
+
+                <div id="statusAlert" class="hidden p-3 rounded-2xl text-xs font-bold text-center"></div>
+
+                <div class="flex gap-2.5 pt-1">
+                    <button type="button" onclick="saveStudentResult()" id="saveResultBtn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                        🚀 विद्यार्थी का रिजल्ट पब्लिश / सेव करें
+                    </button>
+                    <button type="button" onclick="resetResultForm()" id="cancelEditBtn" class="hidden px-5 py-3.5 rounded-2xl inactive-btn text-xs font-extrabold">
+                        रद्द करें
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Manage Published Results (Filter by Category & Year 2023-2026) -->
+        <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl h-fit space-y-3">
+            <div class="flex items-center justify-between pb-2.5 border-b border-[var(--border)]">
+                <div>
+                    <h3 class="text-base font-extrabold">📋 प्रकाशित परिणाम (2023–2026)</h3>
+                    <p class="text-[10px] text-[var(--muted)]">श्रेणी या वर्ष के अनुसार फ़िल्टर व एडिट करें</p>
+                </div>
+                <span id="adminResultCount" class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-extrabold">0</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <select id="adminFilterCat" onchange="renderAdminResultList()" class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    <option value="All">All Categories</option>
+                    <option value="Matriculation">Matriculation (10th)</option>
+                    <option value="Intermediate">Intermediate (12th)</option>
+                </select>
+                <select id="adminFilterYear" onchange="renderAdminResultList()" class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                    <option value="All">All Years (2023-2026)</option>
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+
+            <input type="text" id="adminSearchInput" oninput="renderAdminResultList()" placeholder="🔍 नाम, रोल कोड या रोल नंबर से खोजें..." class="w-full px-3.5 py-2 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+
+            <div id="adminResultList" class="space-y-2.5 max-h-[540px] overflow-y-auto pr-1">
+                <div class="py-10 text-center text-xs text-[var(--muted)]">लोड हो रहा है...</div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, setDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.cachedResults = [];
+
+onAuthStateChanged(auth, (user) => {
+    const authGate = document.getElementById("authGate");
+    const workspace = document.getElementById("adminWorkspace");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+        authGate.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
+        listenToResults();
+    } else {
+        authGate.classList.remove("hidden");
+        workspace.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+    }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+        errBox.innerText = "अमान्य एडमिन ईमेल या पासवर्ड।";
+        errBox.classList.remove("hidden");
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+function showStatus(msg, isSuccess) {
+    const box = document.getElementById("statusAlert");
+    box.innerText = msg;
+    box.className = isSuccess
+        ? "p-3 rounded-2xl text-xs font-bold text-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        : "p-3 rounded-2xl text-xs font-bold text-center bg-rose-500/15 text-rose-400 border border-rose-500/30";
+    box.classList.remove("hidden");
+    setTimeout(() => box.classList.add("hidden"), 4500);
+}
+
+// Save Embedded Official Website URL for Category & Year
+window.saveEmbedServerConfig = async function() {
+    const cat = document.getElementById("embedCategory").value;
+    const yr = document.getElementById("embedYear").value;
+    const url = document.getElementById("embedServerUrl").value.trim();
+    if (!url) return;
+
+    const key = `${cat}_${yr}`;
+    try {
+        await setDoc(doc(db, "results", "portal_embed_config"), {
+            [key]: url,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        showStatus(`✅ ${cat} (${yr}) के लिए इन-पेज एम्बेड वेबसाइट URL सेव हो गया!`, true);
+    } catch (e) {
+        showStatus("❌ सेव करने की अनुमति नहीं है।", false);
+    }
+};
+
+window.saveStudentResult = async function() {
+    const editId = document.getElementById("editResultId").value;
+    const category = document.getElementById("resCategory").value;
+    const examYear = document.getElementById("resYear").value;
+    const stream = document.getElementById("resStream").value;
+    const resultStatus = document.getElementById("resStatus").value;
+    const rollCode = document.getElementById("resRollCode").value.trim();
+    const rollNumber = document.getElementById("resRollNo").value.trim();
+    const regNo = document.getElementById("resRegNo").value.trim();
+    const studentName = document.getElementById("resStudentName").value.trim();
+    const fatherName = document.getElementById("resFatherName").value.trim();
+    const motherName = document.getElementById("resMotherName").value.trim();
+    const schoolName = document.getElementById("resSchool").value.trim();
+    const totalMarks = Number(document.getElementById("resTotalMarks").value || 0);
+    const division = document.getElementById("resDivision").value;
+    const marksHtml = document.getElementById("resMarksHtml").value.trim();
+
+    if (!rollCode || !rollNumber || !studentName || !totalMarks) {
+        showStatus("कृपया रोल कोड, रोल नंबर, विद्यार्थी का नाम और कुल प्राप्तांक अवश्य भरें!", false);
+        return;
+    }
+
+    const btn = document.getElementById("saveResultBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const payload = {
+        category,
+        examYear,
+        stream,
+        resultStatus,
+        rollCode,
+        rollNumber,
+        regNo,
+        studentName,
+        fatherName,
+        motherName,
+        schoolName,
+        totalMarks,
+        maxMarks: 500,
+        division,
+        marksHtml,
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "results", editId), payload);
+            showStatus("✅ विद्यार्थी का परिणाम सफलतापूर्वक अपडेट हो गया!", true);
+        } else {
+            payload.createdAt = serverTimestamp();
+            await addDoc(collection(db, "results"), payload);
+            showStatus(`🚀 ${category} (${examYear}) का परिणाम सफलतापूर्वक पब्लिश हो गया!`, true);
+        }
+        window.resetResultForm();
+    } catch (err) {
+        showStatus("❌ परमिशन अस्वीकृत! सुनिश्चित करें कि आप अधिकृत एडमिन अकाउंट से लॉग इन हैं।", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 विद्यार्थी का रिजल्ट पब्लिश / सेव करें";
+    }
+};
+
+function listenToResults() {
+    onSnapshot(collection(db, "results"), (snap) => {
+        const list = [];
+        snap.forEach(d => {
+            if (d.id !== "portal_embed_config") {
+                list.push({ id: d.id, ...d.data() });
+            }
+        });
+        window.cachedResults = list;
+        window.renderAdminResultList();
+    });
+}
+
+window.renderAdminResultList = function() {
+    const container = document.getElementById("adminResultList");
+    const catFilter = document.getElementById("adminFilterCat").value;
+    const yrFilter = document.getElementById("adminFilterYear").value;
+    const q = (document.getElementById("adminSearchInput").value || "").toLowerCase().trim();
+
+    const list = (window.cachedResults || []).filter(item => {
+        const itemCat = item.category || "Matriculation";
+        const itemYr = String(item.examYear || "2026");
+        const matchCat = catFilter === "All" || itemCat === catFilter;
+        const matchYr = yrFilter === "All" || itemYr === yrFilter;
+        const blob = `${item.studentName || ""} ${item.rollCode || ""} ${item.rollNumber || ""} ${itemCat} ${itemYr}`.toLowerCase();
+        return matchCat && matchYr && (!q || blob.includes(q));
+    });
+
+    document.getElementById("adminResultCount").innerText = `${list.length}`;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs text-[var(--muted)]">इस श्रेणी या वर्ष में कोई परिणाम रिकॉर्ड नहीं मिला।</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] flex items-center justify-between gap-3";
+        div.innerHTML = `
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[10px] font-extrabold">${item.category || "Matriculation"} • ${item.examYear || "2026"}</span>
+                    <span class="text-[11px] font-mono font-extrabold text-amber-400">Code: ${item.rollCode || ""} | Roll: ${item.rollNumber || ""}</span>
+                </div>
+                <h4 class="text-xs font-extrabold truncate">${item.studentName || ""} <span class="text-sky-400">(${item.totalMarks || 0}/500 • ${item.division || ""})</span></h4>
+                <p class="text-[10px] text-[var(--muted)] truncate">${item.stream || ""} • ${item.schoolName || ""}</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="loadResultForEdit('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 text-blue-400 text-[11px] font-extrabold hover:bg-blue-600 hover:text-white transition">✏️ Edit</button>
+                <button onclick="deleteResult('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-[11px] font-extrabold hover:bg-rose-600 hover:text-white transition">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+};
+
+window.loadResultForEdit = function(id) {
+    const item = (window.cachedResults || []).find(r => r.id === id);
+    if (!item) return;
+
+    document.getElementById("editResultId").value = item.id;
+    document.getElementById("resCategory").value = item.category || "Matriculation";
+    document.getElementById("resYear").value = String(item.examYear || "2026");
+    document.getElementById("resStream").value = item.stream || "General (Matric)";
+    document.getElementById("resStatus").value = item.resultStatus || "PASS";
+    document.getElementById("resRollCode").value = item.rollCode || "";
+    document.getElementById("resRollNo").value = item.rollNumber || "";
+    document.getElementById("resRegNo").value = item.regNo || "";
+    document.getElementById("resStudentName").value = item.studentName || "";
+    document.getElementById("resFatherName").value = item.fatherName || "";
+    document.getElementById("resMotherName").value = item.motherName || "";
+    document.getElementById("resSchool").value = item.schoolName || "";
+    document.getElementById("resTotalMarks").value = item.totalMarks || "";
+    document.getElementById("resDivision").value = item.division || "1st Division";
+    document.getElementById("resMarksHtml").value = item.marksHtml || "";
+
+    document.getElementById("editorHeading").innerText = "✏️ विद्यार्थी का परिणाम संशोधित करें (Edit Mode)";
+    document.getElementById("cancelEditBtn").classList.remove("hidden");
+    window.updateMarksPreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.resetResultForm = function() {
+    document.getElementById("editResultId").value = "";
+    document.getElementById("resRollCode").value = "";
+    document.getElementById("resRollNo").value = "";
+    document.getElementById("resRegNo").value = "";
+    document.getElementById("resStudentName").value = "";
+    document.getElementById("resFatherName").value = "";
+    document.getElementById("resMotherName").value = "";
+    document.getElementById("resSchool").value = "";
+    document.getElementById("resTotalMarks").value = "";
+    document.getElementById("resMarksHtml").value = "";
+    document.getElementById("editorHeading").innerText = "➕ विद्यार्थी का रिजल्ट / मार्कशीट जोड़ें (2023–2026)";
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    window.updateMarksPreview();
+};
+
+window.deleteResult = async function(id) {
+    if (!confirm("क्या आप इस विद्यार्थी का परिणाम रिकॉर्ड हटाना चाहते हैं?")) return;
+    try {
+        await deleteDoc(doc(db, "results", id));
+        showStatus("🗑️ परिणाम रिकॉर्ड हटा दिया गया।", true);
+    } catch (e) {
+        showStatus("❌ हटाने की अनुमति नहीं है।", false);
+    }
+};
+</script>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function updateMarksPreview() {
+    const val = document.getElementById("resMarksHtml").value.trim();
+    document.getElementById("marksPreview").innerHTML = val || '<p class="text-[var(--muted)]">यहाँ विषयवार अंकों की तालिका का प्रीव्यू दिखेगा...</p>';
+}
+
+function appendMarksRow() {
+    const sub = document.getElementById("subName").value.trim();
+    const th = Number(document.getElementById("subTheory").value || 0);
+    const pr = Number(document.getElementById("subPrac").value || 0);
+    const totInput = document.getElementById("subTotal").value.trim();
+    const tot = totInput ? Number(totInput) : (th + pr);
+
+    if (!sub) return;
+
+    const area = document.getElementById("resMarksHtml");
+    let current = area.value.trim();
+    const newRow = `  <tr>\n    <td><b>${sub}</b></td>\n    <td>100</td>\n    <td>30</td>\n    <td>${th}</td>\n    <td>${pr || "—"}</td>\n    <td><b>${tot}${tot >= 75 ? " D" : ""}</b></td>\n  </tr>\n`;
+
+    if (!current.includes("<table")) {
+        current = `<table class="marks-table">\n  <tr>\n    <th>विषय (Subject)</th>\n    <th>पूर्णांक (Full)</th>\n    <th>उत्तीर्णांक (Pass)</th>\n    <th>सैद्धांतिक (Theory)</th>\n    <th>प्रायोगिक (Prac/Int)</th>\n    <th>कुल अंक (Total)</th>\n  </tr>\n${newRow}</table>`;
+    } else if (current.includes("</table>")) {
+        current = current.replace("</table>", `${newRow}</table>`);
+    } else {
+        current += `\n${newRow}`;
+    }
+
+    area.value = current;
+    const prevTotal = Number(document.getElementById("resTotalMarks").value || 0);
+    document.getElementById("resTotalMarks").value = prevTotal + tot;
+
+    document.getElementById("subName").value = "";
+    document.getElementById("subTheory").value = "";
+    document.getElementById("subPrac").value = "";
+    document.getElementById("subTotal").value = "";
+    updateMarksPreview();
+}
+
+function fillSampleResult() {
+    document.getElementById("resCategory").value = "Matriculation";
+    document.getElementById("resYear").value = "2026";
+    document.getElementById("resStream").value = "General (Matric)";
+    document.getElementById("resStatus").value = "PASS";
+    document.getElementById("resRollCode").value = "51001";
+    document.getElementById("resRollNo").value = "2600101";
+    document.getElementById("resRegNo").value = "51001-R-0142/25";
+    document.getElementById("resStudentName").value = "आदित्य कुमार (ADITYA KUMAR)";
+    document.getElementById("resFatherName").value = "विनोद प्रसाद (VINOD PRASAD)";
+    document.getElementById("resMotherName").value = "कविता देवी (KAVITA DEVI)";
+    document.getElementById("resSchool").value = "राजकीय उच्च विद्यालय, पटना (+2 High School Patna)";
+    document.getElementById("resTotalMarks").value = "442";
+    document.getElementById("resDivision").value = "1st Division";
+    document.getElementById("resMarksHtml").value = `<table class="marks-table">
+  <tr>
+    <th>विषय (Subject)</th>
+    <th>पूर्णांक (Full)</th>
+    <th>उत्तीर्णांक (Pass)</th>
+    <th>सैद्धांतिक (Theory)</th>
+    <th>प्रायोगिक (Prac/Int)</th>
+    <th>कुल अंक (Total)</th>
+  </tr>
+  <tr>
+    <td><b>101 - HINDI (मातृभाषा)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>86</td>
+    <td>—</td>
+    <td><b>86 D</b></td>
+  </tr>
+  <tr>
+    <td><b>105 - SANSKRIT (द्वितीय भाषा)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>84</td>
+    <td>—</td>
+    <td><b>84 D</b></td>
+  </tr>
+  <tr>
+    <td><b>110 - MATHEMATICS (गणित)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>95</td>
+    <td>—</td>
+    <td><b>95 D</b></td>
+  </tr>
+  <tr>
+    <td><b>112 - SCIENCE (विज्ञान)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>70</td>
+    <td>19</td>
+    <td><b>89 D</b></td>
+  </tr>
+  <tr>
+    <td><b>111 - SOCIAL SCIENCE (सामाजिक विज्ञान)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>69</td>
+    <td>19</td>
+    <td><b>88 D</b></td>
+  </tr>
+  <tr>
+    <td><b>113 - ENGLISH (Optional)</b></td>
+    <td>100</td>
+    <td>30</td>
+    <td>78</td>
+    <td>—</td>
+    <td><b>78</b></td>
+  </tr>
+</table>`;
+    updateMarksPreview();
+}
+</script>
+
+</body>
+</html>
