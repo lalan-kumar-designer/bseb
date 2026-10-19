@@ -21,8 +21,8 @@ def create_signature(text: str) -> str:
 
 @app.route('/')
 def home():
-    """Serve the homepage."""
-    return send_file('index.html')
+    """Serve the homepage from the root directory."""
+    return send_file('../index.html')
 
 @app.route("/api/captcha", methods=["GET"])
 def generate_captcha():
