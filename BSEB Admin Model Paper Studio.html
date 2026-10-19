@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>BSEB Admin Model Paper Studio (PDF, Drive & HTML)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:80px;
+    transition:background .3s,color .3s;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+.preview-paper h1,.preview-paper h2,.preview-paper h3,.preview-paper h4{
+    font-weight:800;
+    margin:8px 0 4px;
+}
+.preview-paper table{
+    width:100%;
+    border-collapse:collapse;
+    margin:8px 0;
+    font-size:11.5px;
+}
+.preview-paper th,.preview-paper td{
+    border:1px solid var(--border);
+    padding:7px;
+    text-align:left;
+}
+.preview-paper th{
+    background:#881337;
+    color:#ffffff;
+}
+.preview-paper .q-card{
+    padding:10px;
+    border-radius:12px;
+    background:var(--card);
+    border:1px solid var(--border);
+    margin:8px 0;
+}
+.preview-paper .ans-badge{
+    display:inline-block;
+    margin-top:4px;
+    padding:2px 8px;
+    border-radius:6px;
+    background:rgba(16,185,129,.15);
+    color:#10b981;
+    font-weight:800;
+    font-size:10px;
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-6xl mx-auto">
+
+<!-- Header -->
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="../model_paper.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-rose-400 shadow-sm">← Model Paper Page</a>
+    <a href="../admin.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-blue-400 shadow-sm">⚙️ Main Admin</a>
+    <div class="flex-1 min-w-0">
+        <h1 class="text-sm sm:text-lg font-extrabold truncate">📄 BSEB Admin Model Paper Studio</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-rose-400 truncate">PUBLISH PDF LINK, GOOGLE DRIVE LINK OR HTML QUESTION PAPER</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+    <button id="logoutBtn" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold shadow-md">Sign Out</button>
+</header>
+
+<!-- Admin Login Gate -->
+<section id="authGate" class="max-w-md mx-auto mt-10 px-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-700 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">📄</div>
+            <h2 class="text-lg font-extrabold">Admin Model Paper Login</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">लॉग इन करके कक्षा 8वीं से 12वीं के लिए PDF लिंक, Google Drive लिंक या HTML मॉडल पेपर पब्लिश करें।</p>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-bold text-center"></div>
+
+        <form id="loginForm" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">Admin Email ID</label>
+                <input type="email" id="adminEmail" required placeholder="admin@bseb.ac.in" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password</label>
+                <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            </div>
+            <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 text-white text-xs sm:text-sm font-extrabold shadow-lg">
+                Unlock Model Paper Studio
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Main Admin Workspace -->
+<main id="adminWorkspace" class="hidden px-3.5 mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left Column: Model Paper Creator (PDF + Drive + HTML) -->
+    <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+            <div>
+                <h2 id="editorHeading" class="text-base sm:text-lg font-extrabold">➕ नया मॉडल प्रश्न-पत्र जोड़ें (PDF / Drive / HTML)</h2>
+                <p class="text-[11px] text-[var(--muted)]">आप केवल PDF/Drive लिंक, केवल HTML प्रश्न-पत्र, या दोनों एक साथ पब्लिश कर सकते हैं।</p>
+            </div>
+            <button type="button" onclick="fillSampleModelPaper()" class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px] font-extrabold hover:bg-amber-500 hover:text-slate-950 transition">
+                ✨ Sample Model Paper भरें
+            </button>
+        </div>
+
+        <input type="hidden" id="editPaperId">
+
+        <div class="space-y-3.5">
+            <!-- Title & Subject -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold mb-1 text-rose-400">मॉडल पेपर का शीर्षक (Paper Title)*</label>
+                    <input type="text" id="paperTitle" placeholder="e.g. बिहार बोर्ड 10वीं विज्ञान आधिकारिक मॉडल पेपर 2027" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-emerald-400">विषय (Subject)*</label>
+                    <input type="text" id="paperSubject" placeholder="e.g. Science (विज्ञान)" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+            </div>
+
+            <!-- Class, Stream, Year, Set Code -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div>
+                    <label class="block text-xs font-bold mb-1">कक्षा (Class)*</label>
+                    <select id="paperClass" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="Class 10">Class 10th (Matric)</option>
+                        <option value="Class 12">Class 12th (Inter)</option>
+                        <option value="Class 11">Class 11th</option>
+                        <option value="Class 9">Class 9th</option>
+                        <option value="Class 8">Class 8th</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">संकाय (Stream)</label>
+                    <select id="paperStream" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="All">All / General (8th-10th)</option>
+                        <option value="Science">Science</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Commerce">Commerce</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">परीक्षा वर्ष (Year)</label>
+                    <select id="paperYear" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="2027">2027</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">सेट कोड (Set Code)</label>
+                    <input type="text" id="paperSetCode" value="Set-A" placeholder="Set-A" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+            </div>
+
+            <!-- Full Marks, Duration & PDF / Google Drive Link -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div>
+                    <label class="block text-xs font-bold mb-1">पूर्णांक (Full Marks)</label>
+                    <input type="text" id="paperMarks" value="100" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">समय (Duration)</label>
+                    <input type="text" id="paperDuration" value="3 Hours 15 Mins" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-xs font-bold mb-1 text-sky-400">📄 PDF Link या Google Drive Link (Optional)</label>
+                    <input type="url" id="paperPdfLink" placeholder="https://drive.google.com/file/d/... या Direct PDF URL" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+            </div>
+
+            <!-- Quick Objective MCQ & Subjective Question Builder for HTML -->
+            <div class="p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-extrabold text-rose-400">⚡ HTML प्रश्न-पत्र बिल्डर (Quick Question Builder):</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="insertPaperTag('<h3>खंड-अ : वस्तुनिष्ठ प्रश्न (Objective Questions)</h3>\n')" class="px-2.5 py-1 rounded-lg inactive-btn text-[11px] font-bold">+ खंड-अ (Objective)</button>
+                        <button type="button" onclick="insertPaperTag('<h3>खंड-ब : गैर-वस्तुनिष्ठ प्रश्न (Subjective Questions)</h3>\n')" class="px-2.5 py-1 rounded-lg inactive-btn text-[11px] font-bold">+ खंड-ब (Subjective)</button>
+                    </div>
+                </div>
+
+                <!-- Objective Question Adder -->
+                <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 pt-1">
+                    <input type="text" id="mcqQuestion" placeholder="वस्तुनिष्ठ प्रश्न लिखें (e.g. 1. प्रकाश के परावर्तन के कितने नियम हैं?)" class="sm:col-span-6 px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="mcqOptA" placeholder="Option (A)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="mcqOptB" placeholder="Option (B)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="mcqOptC" placeholder="Option (C)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="mcqOptD" placeholder="Option (D)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="mcqAns" placeholder="सही उत्तर (e.g. B)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs font-bold">
+                    <button type="button" onclick="appendMcqHtml()" class="py-2 px-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-extrabold hover:bg-rose-600 hover:text-white transition">
+                        + Add MCQ
+                    </button>
+                </div>
+
+                <!-- Subjective Question Adder -->
+                <div class="grid grid-cols-1 sm:grid-cols-6 gap-2 pt-2 border-t border-[var(--border)]">
+                    <input type="text" id="subQuestionText" placeholder="लघु/दीर्घ उत्तरीय प्रश्न लिखें (e.g. ओम का नियम क्या है? सत्यापन करें।)" class="sm:col-span-4 px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <input type="text" id="subQuestionMarks" placeholder="अंक (e.g. 2 Marks)" class="px-2.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                    <button type="button" onclick="appendSubjectiveHtml()" class="py-2 px-3 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-extrabold hover:bg-indigo-600 hover:text-white transition">
+                        + Add Subjective
+                    </button>
+                </div>
+            </div>
+
+            <!-- Direct HTML Content Editor -->
+            <div>
+                <label class="block text-xs font-extrabold text-emerald-400 mb-1">📝 मॉडल पेपर HTML कंटेंट (Optional if PDF/Drive Link is provided):</label>
+                <textarea id="paperHtmlInput" rows="7" oninput="updatePaperPreview()" placeholder="<div class='q-card'>...</div>" class="w-full p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+            </div>
+
+            <!-- Live HTML Preview -->
+            <div>
+                <label class="block text-xs font-extrabold text-sky-400 mb-1">👁️ लाइव HTML प्रश्न-पत्र प्रीव्यू (Live Student View):</label>
+                <div id="paperLivePreview" class="preview-paper p-4 rounded-2xl bg-[var(--card-sub)] border border-dashed border-[var(--border)] max-h-[260px] overflow-y-auto text-xs">
+                    <p class="text-[var(--muted)]">यहाँ आपके HTML मॉडल पेपर का लाइव प्रीव्यू दिखेगा...</p>
+                </div>
+            </div>
+
+            <div id="statusAlert" class="hidden p-3 rounded-2xl text-xs font-bold text-center"></div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="saveModelPaper()" id="savePaperBtn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                    🚀 मॉडल प्रश्न-पत्र पब्लिश / सेव करें
+                </button>
+                <button type="button" onclick="resetPaperForm()" id="cancelEditBtn" class="hidden px-5 py-3.5 rounded-2xl inactive-btn text-xs font-extrabold">
+                    रद्द करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Manage Published Model Papers -->
+    <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl h-fit space-y-3">
+        <div class="flex items-center justify-between pb-2.5 border-b border-[var(--border)]">
+            <div>
+                <h3 class="text-base font-extrabold">📋 प्रकाशित मॉडल पेपर (Manage)</h3>
+                <p class="text-[10px] text-[var(--muted)]">कक्षा या विषय से फ़िल्टर व एडिट करें</p>
+            </div>
+            <span id="adminPaperCount" class="px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 text-xs font-extrabold">0</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+            <select id="adminFilterClass" onchange="renderAdminPaperList()" class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                <option value="All">All Classes (8th-12th)</option>
+                <option value="Class 10">Class 10th (Matric)</option>
+                <option value="Class 12">Class 12th (Inter)</option>
+                <option value="Class 11">Class 11th</option>
+                <option value="Class 9">Class 9th</option>
+                <option value="Class 8">Class 8th</option>
+            </select>
+            <input type="text" id="adminSearchPaper" oninput="renderAdminPaperList()" placeholder="🔍 विषय या शीर्षक खोजें..." class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+        </div>
+
+        <div id="adminPaperList" class="space-y-2.5 max-h-[560px] overflow-y-auto pr-1">
+            <div class="py-10 text-center text-xs text-[var(--muted)]">लोड हो रहा है...</div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.cachedPapers = [];
+
+onAuthStateChanged(auth, (user) => {
+    const authGate = document.getElementById("authGate");
+    const workspace = document.getElementById("adminWorkspace");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+        authGate.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
+        listenToModelPapers();
+    } else {
+        authGate.classList.remove("hidden");
+        workspace.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+    }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+        errBox.innerText = "अमान्य एडमिन ईमेल या पासवर्ड।";
+        errBox.classList.remove("hidden");
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+function showStatus(msg, isSuccess) {
+    const box = document.getElementById("statusAlert");
+    box.innerText = msg;
+    box.className = isSuccess
+        ? "p-3 rounded-2xl text-xs font-bold text-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        : "p-3 rounded-2xl text-xs font-bold text-center bg-rose-500/15 text-rose-400 border border-rose-500/30";
+    box.classList.remove("hidden");
+    setTimeout(() => box.classList.add("hidden"), 4500);
+}
+
+window.saveModelPaper = async function() {
+    const editId = document.getElementById("editPaperId").value;
+    const title = document.getElementById("paperTitle").value.trim();
+    const subject = document.getElementById("paperSubject").value.trim();
+    const className = document.getElementById("paperClass").value;
+    const stream = document.getElementById("paperStream").value;
+    const examYear = document.getElementById("paperYear").value;
+    const setCode = document.getElementById("paperSetCode").value.trim() || "Set-A";
+    const fullMarks = document.getElementById("paperMarks").value.trim() || "100";
+    const duration = document.getElementById("paperDuration").value.trim() || "3 Hours 15 Mins";
+    const pdfLink = document.getElementById("paperPdfLink").value.trim();
+    const htmlContent = document.getElementById("paperHtmlInput").value.trim();
+
+    if (!title || !subject) {
+        showStatus("कृपया मॉडल पेपर का शीर्षक और विषय नाम अवश्य भरें!", false);
+        return;
+    }
+
+    if (!pdfLink && !htmlContent) {
+        showStatus("कृपया कम से कम एक (PDF/Drive लिंक या HTML प्रश्न-पत्र) अवश्य भरें!", false);
+        return;
+    }
+
+    const btn = document.getElementById("savePaperBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const payload = {
+        title,
+        subject,
+        className,
+        stream,
+        examYear,
+        setCode,
+        fullMarks,
+        duration,
+        pdfLink,
+        htmlContent,
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "model_papers", editId), payload);
+            showStatus("✅ मॉडल प्रश्न-पत्र सफलतापूर्वक अपडेट हो गया!", true);
+        } else {
+            payload.createdAt = serverTimestamp();
+            await addDoc(collection(db, "model_papers"), payload);
+            showStatus("🚀 नया मॉडल प्रश्न-पत्र सफलतापूर्वक पब्लिश हो गया!", true);
+        }
+        window.resetPaperForm();
+    } catch (err) {
+        showStatus("❌ परमिशन अस्वीकृत! सुनिश्चित करें कि आप अधिकृत एडमिन अकाउंट से लॉग इन हैं।", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 मॉडल प्रश्न-पत्र पब्लिश / सेव करें";
+    }
+};
+
+function listenToModelPapers() {
+    onSnapshot(collection(db, "model_papers"), (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        window.cachedPapers = list;
+        window.renderAdminPaperList();
+    });
+}
+
+window.renderAdminPaperList = function() {
+    const container = document.getElementById("adminPaperList");
+    const clsFilter = document.getElementById("adminFilterClass").value;
+    const q = (document.getElementById("adminSearchPaper").value || "").toLowerCase().trim();
+
+    const list = (window.cachedPapers || []).filter(item => {
+        const matchCls = clsFilter === "All" || item.className === clsFilter;
+        const blob = `${item.title || ""} ${item.subject || ""} ${item.className || ""} ${item.setCode || ""}`.toLowerCase();
+        return matchCls && (!q || blob.includes(q));
+    });
+
+    document.getElementById("adminPaperCount").innerText = `${list.length}`;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs text-[var(--muted)]">कोई मॉडल प्रश्न-पत्र रिकॉर्ड नहीं मिला।</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(item => {
+        const hasPdf = !!item.pdfLink;
+        const hasHtml = !!(item.htmlContent && item.htmlContent.trim());
+
+        const div = document.createElement("div");
+        div.className = "p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] flex items-center justify-between gap-3";
+        div.innerHTML = `
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                    <span class="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 text-[10px] font-extrabold">${item.className || "Class 10"}</span>
+                    <span class="text-[10px] font-bold text-amber-400">${item.subject || ""} • ${item.setCode || "Set-A"} (${item.examYear || "2027"})</span>
+                </div>
+                <h4 class="text-xs font-extrabold truncate">${item.title || ""}</h4>
+                <div class="flex items-center gap-2 mt-1 text-[10px] font-bold">
+                    ${hasPdf ? `<span class="text-sky-400">✔ PDF/Drive Link</span>` : ""}
+                    ${hasHtml ? `<span class="text-emerald-400">✔ HTML Paper</span>` : ""}
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="loadPaperForEdit('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 text-blue-400 text-[11px] font-extrabold hover:bg-blue-600 hover:text-white transition">✏️ Edit</button>
+                <button onclick="deletePaper('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-[11px] font-extrabold hover:bg-rose-600 hover:text-white transition">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+};
+
+window.loadPaperForEdit = function(id) {
+    const item = (window.cachedPapers || []).find(p => p.id === id);
+    if (!item) return;
+
+    document.getElementById("editPaperId").value = item.id;
+    document.getElementById("paperTitle").value = item.title || "";
+    document.getElementById("paperSubject").value = item.subject || "";
+    document.getElementById("paperClass").value = item.className || "Class 10";
+    document.getElementById("paperStream").value = item.stream || "All";
+    document.getElementById("paperYear").value = String(item.examYear || "2027");
+    document.getElementById("paperSetCode").value = item.setCode || "Set-A";
+    document.getElementById("paperMarks").value = item.fullMarks || "100";
+    document.getElementById("paperDuration").value = item.duration || "3 Hours 15 Mins";
+    document.getElementById("paperPdfLink").value = item.pdfLink || "";
+    document.getElementById("paperHtmlInput").value = item.htmlContent || "";
+
+    document.getElementById("editorHeading").innerText = "✏️ मॉडल प्रश्न-पत्र संशोधित करें (Edit Mode)";
+    document.getElementById("cancelEditBtn").classList.remove("hidden");
+    window.updatePaperPreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.resetPaperForm = function() {
+    document.getElementById("editPaperId").value = "";
+    document.getElementById("paperTitle").value = "";
+    document.getElementById("paperSubject").value = "";
+    document.getElementById("paperSetCode").value = "Set-A";
+    document.getElementById("paperPdfLink").value = "";
+    document.getElementById("paperHtmlInput").value = "";
+    document.getElementById("editorHeading").innerText = "➕ नया मॉडल प्रश्न-पत्र जोड़ें (PDF / Drive / HTML)";
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    window.updatePaperPreview();
+};
+
+window.deletePaper = async function(id) {
+    if (!confirm("क्या आप इस मॉडल प्रश्न-पत्र को हटाना चाहते हैं?")) return;
+    try {
+        await deleteDoc(doc(db, "model_papers", id));
+        showStatus("🗑️ मॉडल प्रश्न-पत्र हटा दिया गया।", true);
+    } catch (e) {
+        showStatus("❌ हटाने की अनुमति नहीं है।", false);
+    }
+};
+</script>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function updatePaperPreview() {
+    const val = document.getElementById("paperHtmlInput").value.trim();
+    document.getElementById("paperLivePreview").innerHTML = val || '<p class="text-[var(--muted)]">यहाँ आपके HTML मॉडल पेपर का लाइव प्रीव्यू दिखेगा...</p>';
+}
+
+function insertPaperTag(tag) {
+    const area = document.getElementById("paperHtmlInput");
+    area.value += (area.value ? "\n" : "") + tag;
+    updatePaperPreview();
+}
+
+function appendMcqHtml() {
+    const q = document.getElementById("mcqQuestion").value.trim();
+    const a = document.getElementById("mcqOptA").value.trim() || "—";
+    const b = document.getElementById("mcqOptB").value.trim() || "—";
+    const c = document.getElementById("mcqOptC").value.trim() || "—";
+    const d = document.getElementById("mcqOptD").value.trim() || "—";
+    const ans = document.getElementById("mcqAns").value.trim();
+    if (!q) return;
+
+    const block = `<div class="q-card">
+  <p><b>${q}</b></p>
+  <p>(A) ${a} &nbsp;&nbsp; (B) ${b} &nbsp;&nbsp; (C) ${c} &nbsp;&nbsp; (D) ${d}</p>
+  ${ans ? `<span class="ans-badge">✔ उत्तर: (${ans})</span>` : ""}
+</div>`;
+
+    const area = document.getElementById("paperHtmlInput");
+    area.value += (area.value ? "\n" : "") + block;
+
+    document.getElementById("mcqQuestion").value = "";
+    document.getElementById("mcqOptA").value = "";
+    document.getElementById("mcqOptB").value = "";
+    document.getElementById("mcqOptC").value = "";
+    document.getElementById("mcqOptD").value = "";
+    document.getElementById("mcqAns").value = "";
+    updatePaperPreview();
+}
+
+function appendSubjectiveHtml() {
+    const q = document.getElementById("subQuestionText").value.trim();
+    const m = document.getElementById("subQuestionMarks").value.trim() || "2 Marks";
+    if (!q) return;
+
+    const block = `<div class="q-card">
+  <p><b>प्रश्न: ${q}</b> <span style="float:right;color:#fb7185;font-weight:800;">[${m}]</span></p>
+</div>`;
+
+    const area = document.getElementById("paperHtmlInput");
+    area.value += (area.value ? "\n" : "") + block;
+
+    document.getElementById("subQuestionText").value = "";
+    document.getElementById("subQuestionMarks").value = "";
+    updatePaperPreview();
+}
+
+function fillSampleModelPaper() {
+    document.getElementById("paperTitle").value = "बिहार बोर्ड मैट्रिक (10वीं) विज्ञान आधिकारिक मॉडल प्रश्न-पत्र 2027";
+    document.getElementById("paperSubject").value = "Science (विज्ञान)";
+    document.getElementById("paperClass").value = "Class 10";
+    document.getElementById("paperStream").value = "All";
+    document.getElementById("paperYear").value = "2027";
+    document.getElementById("paperSetCode").value = "Set-A";
+    document.getElementById("paperMarks").value = "80";
+    document.getElementById("paperDuration").value = "2 घंटे 45 मिनट";
+    document.getElementById("paperHtmlInput").value = `<p><b>परीक्षार्थियों के लिए निर्देश:</b></p>
+<ul>
+  <li>प्रश्न-पत्र दो खंडों में विभाजित है — <b>खंड-अ (वस्तुनिष्ठ प्रश्न)</b> एवं <b>खंड-ब (लघु एवं दीर्घ उत्तरीय प्रश्न)</b>।</li>
+  <li>सभी प्रश्नों के अंक उनके सामने अंकित हैं।</li>
+</ul>
+<h3>खंड-अ : वस्तुनिष्ठ प्रश्न (Objective Questions)</h3>
+<div class="q-card">
+  <p><b>1. प्रकाश के परावर्तन के कितने नियम हैं? (How many laws of reflection of light are there?)</b></p>
+  <p>(A) 1 &nbsp;&nbsp; (B) 2 &nbsp;&nbsp; (C) 3 &nbsp;&nbsp; (D) 4</p>
+  <span class="ans-badge">✔ उत्तर: (B) 2</span>
+</div>
+<div class="q-card">
+  <p><b>2. विद्युत धारा का SI मात्रक क्या होता है? (What is the SI unit of electric current?)</b></p>
+  <p>(A) वोल्ट (Volt) &nbsp;&nbsp; (B) कूलॉम (Coulomb) &nbsp;&nbsp; (C) वाट (Watt) &nbsp;&nbsp; (D) एम्पियर (Ampere)</p>
+  <span class="ans-badge">✔ उत्तर: (D) एम्पियर (Ampere)</span>
+</div>
+<div class="q-card">
+  <p><b>3. शुद्ध जल का pH मान कितना होता है? (What is the pH value of pure water?)</b></p>
+  <p>(A) 6 &nbsp;&nbsp; (B) 7 &nbsp;&nbsp; (C) 8 &nbsp;&nbsp; (D) 9</p>
+  <span class="ans-badge">✔ उत्तर: (B) 7</span>
+</div>
+<h3>खंड-ब : लघु एवं दीर्घ उत्तरीय प्रश्न (Subjective Questions)</h3>
+<div class="q-card">
+  <p><b>प्रश्न 1: प्रकाश का अपवर्तन क्या है? इसके नियमों को लिखें।</b> <span style="float:right;color:#fb7185;font-weight:800;">[2 Marks]</span></p>
+</div>
+<div class="q-card">
+  <p><b>प्रश्न 2: ओम के नियम को लिखें और इसका प्रायोगिक सत्यापन करें।</b> <span style="float:right;color:#fb7185;font-weight:800;">[5 Marks]</span></p>
+</div>`;
+    updatePaperPreview();
+}
+</script>
+
+</body>
+</html>
