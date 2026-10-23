@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#075bd8">
+<title>BSEB Admin Quiz Studio (Direct HTML File Upload & Code Paste)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-sub:#f8fafc;
+    --text:#0f172a;
+    --muted:#475569;
+    --border:#cbd5e1;
+    --btn-inactive:#e2e8f0;
+}
+
+body.dark-mode{
+    --bg:#070d1f;
+    --card:#111c38;
+    --card-sub:#17254a;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:#263859;
+    --btn-inactive:#1e293b;
+}
+
+body{
+    font-family:'Inter','Noto Sans Devanagari',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:80px;
+    transition:background .3s,color .3s;
+}
+
+.glass-nav{
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(18px);
+}
+body.dark-mode .glass-nav{
+    background:rgba(17,28,56,.92);
+}
+
+.inactive-btn{
+    background:var(--btn-inactive);
+    color:var(--text);
+}
+
+.preview-quiz .q-block,
+.preview-quiz .q-card{
+    padding:12px;
+    border-radius:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    margin-bottom:10px;
+}
+
+.preview-quiz label.opt-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 10px;
+    margin:5px 0;
+    border-radius:10px;
+    background:var(--card-sub);
+    border:1px solid var(--border);
+    font-size:12px;
+}
+</style>
+</head>
+
+<body class="dark-mode max-w-6xl mx-auto">
+
+<!-- Top Header -->
+<header class="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 glass-nav border-b border-[var(--border)] shadow-md sm:rounded-b-3xl">
+    <a href="../quiz.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-amber-400 shadow-sm">← Quiz Page</a>
+    <a href="../admin.html" class="px-3 py-2 rounded-2xl inactive-btn text-xs font-extrabold text-blue-400 shadow-sm">⚙️ Main Admin</a>
+    <div class="flex-1 min-w-0">
+        <h1 class="text-sm sm:text-lg font-extrabold truncate">🎓 BSEB Admin HTML Quiz Upload Studio</h1>
+        <p class="text-[10px] sm:text-xs font-bold text-amber-400 truncate">DIRECT .HTML FILE UPLOAD OR PASTE HTML QUIZ (CLASS 8TH TO 12TH)</p>
+    </div>
+    <button onclick="toggleTheme()" id="themeBtn" class="w-10 h-10 rounded-2xl inactive-btn flex items-center justify-center text-lg">☀️</button>
+    <button id="logoutBtn" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold shadow-md">Sign Out</button>
+</header>
+
+<!-- Admin Login Gate -->
+<section id="authGate" class="max-w-md mx-auto mt-10 px-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">🎓</div>
+            <h2 class="text-lg font-extrabold">Admin Quiz Studio Login</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">लॉग इन करके सीधे <code class="text-amber-400">.html</code> क्विज फाइल अपलोड करें या पूरा HTML क्विज कोड पेस्ट करके पब्लिश करें।</p>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-bold text-center"></div>
+
+        <form id="loginForm" class="space-y-3.5">
+            <div>
+                <label class="block text-xs font-bold mb-1">Admin Email ID</label>
+                <input type="email" id="adminEmail" required placeholder="admin@bseb.ac.in" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password</label>
+                <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs sm:text-sm font-extrabold shadow-lg">
+                Unlock HTML Quiz Studio
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Main Admin Workspace -->
+<main id="adminWorkspace" class="hidden px-3.5 mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Left Column: Direct HTML Upload & Quiz Metadata Form -->
+    <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+            <div>
+                <h2 id="editorHeading" class="text-base sm:text-lg font-extrabold">📤 सीधा HTML क्विज अपलोड करें (No Manual Question Typing)</h2>
+                <p class="text-[11px] text-[var(--muted)]">एक-एक प्रश्न टाइप करने की आवश्यकता नहीं है — सीधे अपनी <code class="text-amber-400">.html</code> फाइल चुनें या कोड पेस्ट करें।</p>
+            </div>
+            <button type="button" onclick="loadSampleHtmlQuiz()" class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[11px] font-extrabold hover:bg-amber-500 hover:text-slate-950 transition">
+                ✨ रेडीमेड Sample HTML Quiz भरें
+            </button>
+        </div>
+
+        <input type="hidden" id="editQuizId">
+
+        <div class="space-y-3.5">
+            <!-- Step 1: Select Class, Stream, Subject & Title -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold mb-1 text-amber-400">क्विज / परीक्षा का नाम (Quiz Title)*</label>
+                    <input type="text" id="quizTitle" placeholder="e.g. बिहार बोर्ड 10वीं विज्ञान महा-मॉक टेस्ट (प्रकाश का परावर्तन)" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-emerald-400">विषय (Subject)*</label>
+                    <input type="text" id="quizSubject" placeholder="e.g. Science (विज्ञान)" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div>
+                    <label class="block text-xs font-bold mb-1">कक्षा (Class)*</label>
+                    <select id="quizClass" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="Class 10">Class 10th (Matric)</option>
+                        <option value="Class 12">Class 12th (Inter)</option>
+                        <option value="Class 11">Class 11th</option>
+                        <option value="Class 9">Class 9th</option>
+                        <option value="Class 8">Class 8th</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">संकाय (Stream)</label>
+                    <select id="quizStream" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                        <option value="All">All / General (8th-10th)</option>
+                        <option value="Science">Science (विज्ञान)</option>
+                        <option value="Arts">Arts (कला)</option>
+                        <option value="Commerce">Commerce (वाणिज्य)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">समय ( मिनट में )*</label>
+                    <input type="number" id="quizDuration" value="30" placeholder="30" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">पूर्णांक (Total Marks)</label>
+                    <input type="number" id="quizMarks" value="50" placeholder="50" class="w-full px-3 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                    <label class="block text-xs font-bold mb-1">अध्याय / सेट (Chapter / Set Code)</label>
+                    <input type="text" id="quizChapter" placeholder="e.g. Chapter 1 • Set-A" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">कुल प्रश्न संख्या (Total Questions)</label>
+                    <input type="number" id="quizTotalQ" value="5" placeholder="e.g. 20" class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                </div>
+            </div>
+
+            <!-- Step 2: Direct .HTML File Upload Dropzone -->
+            <div class="p-4 rounded-2xl bg-amber-500/10 border-2 border-dashed border-amber-500/40 text-center space-y-2">
+                <div class="text-2xl">📂</div>
+                <h4 class="text-xs sm:text-sm font-extrabold text-amber-400">सीधे अपनी <code class="text-white">.html</code> क्विज फाइल अपलोड करें (Direct HTML File Upload)</h4>
+                <p class="text-[11px] text-[var(--muted)]">अपने फोन या कंप्यूटर से कोई भी <code class="text-amber-300">.html</code> फाइल चुनें — उसका पूरा कोड अपने-आप नीचे लोड हो जाएगा।</p>
+                <div class="pt-1">
+                    <input type="file" id="htmlFilePicker" accept=".html,.htm,.txt" onchange="handleHtmlFileUpload(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('htmlFilePicker').click()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-extrabold shadow-lg">
+                        📤 Choose .HTML Quiz File
+                    </button>
+                    <span id="uploadedFileName" class="block text-[11px] font-bold text-emerald-400 mt-1.5"></span>
+                </div>
+            </div>
+
+            <!-- Step 3: Direct HTML Code Box -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs font-extrabold text-sky-400">📝 या सीधा HTML क्विज कोड यहाँ पेस्ट करें (HTML Quiz Code)*:</label>
+                    <button type="button" onclick="document.getElementById('quizHtmlCode').value=''; updateAdminQuizPreview();" class="text-[10px] font-bold text-rose-400 hover:underline">Clear HTML</button>
+                </div>
+                <textarea id="quizHtmlCode" rows="8" oninput="updateAdminQuizPreview()" placeholder="अपना पूरा HTML क्विज कोड यहाँ पेस्ट करें या ऊपर से .html फाइल अपलोड करें..." class="w-full p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+            </div>
+
+            <!-- Live HTML Quiz Preview -->
+            <div>
+                <label class="block text-xs font-extrabold text-emerald-400 mb-1">👁️ लाइव क्विज प्रीव्यू (Live Student View):</label>
+                <div id="adminQuizPreview" class="preview-quiz p-4 rounded-2xl bg-[var(--card-sub)] border border-dashed border-[var(--border)] max-h-[260px] overflow-y-auto text-xs">
+                    <p class="text-[var(--muted)]">यहाँ आपके अपलोड किए गए HTML क्विज का लाइव प्रीव्यू दिखेगा...</p>
+                </div>
+            </div>
+
+            <div id="statusAlert" class="hidden p-3 rounded-2xl text-xs font-bold text-center"></div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="publishHtmlQuiz()" id="saveQuizBtn" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:brightness-110 text-white text-xs sm:text-sm font-extrabold shadow-lg transition">
+                    🚀 एंटी-चीट फुल-स्क्रीन क्विज पब्लिश / सेव करें
+                </button>
+                <button type="button" onclick="resetQuizForm()" id="cancelEditBtn" class="hidden px-5 py-3.5 rounded-2xl inactive-btn text-xs font-extrabold">
+                    रद्द करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Manage Published Quizzes -->
+    <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-xl h-fit space-y-3">
+        <div class="flex items-center justify-between pb-2.5 border-b border-[var(--border)]">
+            <div>
+                <h3 class="text-base font-extrabold">📋 प्रकाशित क्विज (Manage)</h3>
+                <p class="text-[10px] text-[var(--muted)]">कक्षा या विषय से फ़िल्टर व एडिट करें</p>
+            </div>
+            <span id="adminQuizCount" class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-extrabold">0</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+            <select id="adminFilterClass" onchange="renderAdminQuizList()" class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs font-bold">
+                <option value="All">All Classes (8th-12th)</option>
+                <option value="Class 10">Class 10th (Matric)</option>
+                <option value="Class 12">Class 12th (Inter)</option>
+                <option value="Class 11">Class 11th</option>
+                <option value="Class 9">Class 9th</option>
+                <option value="Class 8">Class 8th</option>
+            </select>
+            <input type="text" id="adminSearchQuiz" oninput="renderAdminQuizList()" placeholder="🔍 विषय या नाम खोजें..." class="px-3 py-2 rounded-xl bg-[var(--card-sub)] border border-[var(--border)] text-xs">
+        </div>
+
+        <div id="adminQuizList" class="space-y-2.5 max-h-[560px] overflow-y-auto pr-1">
+            <div class="py-10 text-center text-xs text-[var(--muted)]">लोड हो रहा है...</div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3cjqdjRTiI17iVxTdDLjFRoWTaZZOPFs",
+  authDomain: "unichat-62506.firebaseapp.com",
+  projectId: "unichat-62506",
+  storageBucket: "unichat-62506.firebasestorage.app",
+  messagingSenderId: "443100124271",
+  appId: "1:443100124271:web:f1a79bcccd2850d965a99a",
+  measurementId: "G-KG7VG83H1Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.cachedQuizzes = [];
+
+onAuthStateChanged(auth, (user) => {
+    const authGate = document.getElementById("authGate");
+    const workspace = document.getElementById("adminWorkspace");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+        authGate.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
+        listenToQuizzes();
+    } else {
+        authGate.classList.remove("hidden");
+        workspace.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+    }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+        errBox.innerText = "अमान्य एडमिन ईमेल या पासवर्ड।";
+        errBox.classList.remove("hidden");
+    }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+function showStatus(msg, isSuccess) {
+    const box = document.getElementById("statusAlert");
+    box.innerText = msg;
+    box.className = isSuccess
+        ? "p-3 rounded-2xl text-xs font-bold text-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+        : "p-3 rounded-2xl text-xs font-bold text-center bg-rose-500/15 text-rose-400 border border-rose-500/30";
+    box.classList.remove("hidden");
+    setTimeout(() => box.classList.add("hidden"), 4500);
+}
+
+window.publishHtmlQuiz = async function() {
+    const editId = document.getElementById("editQuizId").value;
+    const title = document.getElementById("quizTitle").value.trim();
+    const subject = document.getElementById("quizSubject").value.trim();
+    const className = document.getElementById("quizClass").value;
+    const stream = document.getElementById("quizStream").value;
+    const durationMinutes = Number(document.getElementById("quizDuration").value || 30);
+    const totalMarks = Number(document.getElementById("quizMarks").value || 50);
+    const chapter = document.getElementById("quizChapter").value.trim();
+    const totalQuestions = Number(document.getElementById("quizTotalQ").value || 0);
+    const htmlContent = document.getElementById("quizHtmlCode").value.trim();
+
+    if (!title || !subject || !htmlContent) {
+        showStatus("कृपया क्विज का नाम, विषय और HTML कोड (या .html फाइल) अवश्य डालें!", false);
+        return;
+    }
+
+    const btn = document.getElementById("saveQuizBtn");
+    btn.disabled = true;
+    btn.innerText = "Uploading Quiz...";
+
+    const payload = {
+        title,
+        subject,
+        className,
+        stream,
+        durationMinutes,
+        totalMarks,
+        chapter,
+        totalQuestions,
+        htmlContent,
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "quizzes", editId), payload);
+            showStatus("✅ HTML क्विज सफलतापूर्वक अपडेट हो गया!", true);
+        } else {
+            payload.createdAt = serverTimestamp();
+            await addDoc(collection(db, "quizzes"), payload);
+            showStatus("🚀 नया एंटी-चीट HTML क्विज सफलतापूर्वक पब्लिश हो गया!", true);
+        }
+        window.resetQuizForm();
+    } catch (err) {
+        showStatus("❌ परमिशन अस्वीकृत! सुनिश्चित करें कि आप अधिकृत एडमिन अकाउंट से लॉग इन हैं।", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 एंटी-चीट फुल-स्क्रीन क्विज पब्लिश / सेव करें";
+    }
+};
+
+function listenToQuizzes() {
+    onSnapshot(collection(db, "quizzes"), (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        window.cachedQuizzes = list;
+        window.renderAdminQuizList();
+    });
+}
+
+window.renderAdminQuizList = function() {
+    const container = document.getElementById("adminQuizList");
+    const clsFilter = document.getElementById("adminFilterClass").value;
+    const q = (document.getElementById("adminSearchQuiz").value || "").toLowerCase().trim();
+
+    const list = (window.cachedQuizzes || []).filter(item => {
+        const matchCls = clsFilter === "All" || item.className === clsFilter;
+        const blob = `${item.title || ""} ${item.subject || ""} ${item.className || ""} ${item.chapter || ""}`.toLowerCase();
+        return matchCls && (!q || blob.includes(q));
+    });
+
+    document.getElementById("adminQuizCount").innerText = `${list.length}`;
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs text-[var(--muted)]">कोई क्विज रिकॉर्ड नहीं मिला।</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "p-3.5 rounded-2xl bg-[var(--card-sub)] border border-[var(--border)] flex items-center justify-between gap-3";
+        div.innerHTML = `
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                    <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-[10px] font-extrabold">${item.className || "Class 10"}</span>
+                    <span class="text-[10px] font-bold text-emerald-400">${item.subject || ""} • ⏱️ ${item.durationMinutes || 30}m</span>
+                </div>
+                <h4 class="text-xs font-extrabold truncate">${item.title || ""}</h4>
+                <p class="text-[10px] text-[var(--muted)] truncate">🎯 ${item.totalMarks || 50} Marks • ${item.chapter || "HTML Quiz"}</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="loadQuizForEdit('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-blue-500/15 text-blue-400 text-[11px] font-extrabold hover:bg-blue-600 hover:text-white transition">✏️ Edit</button>
+                <button onclick="deleteQuiz('${item.id}')" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-[11px] font-extrabold hover:bg-rose-600 hover:text-white transition">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+};
+
+window.loadQuizForEdit = function(id) {
+    const item = (window.cachedQuizzes || []).find(q => q.id === id);
+    if (!item) return;
+
+    document.getElementById("editQuizId").value = item.id;
+    document.getElementById("quizTitle").value = item.title || "";
+    document.getElementById("quizSubject").value = item.subject || "";
+    document.getElementById("quizClass").value = item.className || "Class 10";
+    document.getElementById("quizStream").value = item.stream || "All";
+    document.getElementById("quizDuration").value = item.durationMinutes || 30;
+    document.getElementById("quizMarks").value = item.totalMarks || 50;
+    document.getElementById("quizChapter").value = item.chapter || "";
+    document.getElementById("quizTotalQ").value = item.totalQuestions || 5;
+    document.getElementById("quizHtmlCode").value = item.htmlContent || "";
+
+    document.getElementById("editorHeading").innerText = "✏️ HTML क्विज संशोधित करें (Edit Mode)";
+    document.getElementById("cancelEditBtn").classList.remove("hidden");
+    window.updateAdminQuizPreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.resetQuizForm = function() {
+    document.getElementById("editQuizId").value = "";
+    document.getElementById("quizTitle").value = "";
+    document.getElementById("quizSubject").value = "";
+    document.getElementById("quizChapter").value = "";
+    document.getElementById("quizHtmlCode").value = "";
+    document.getElementById("uploadedFileName").innerText = "";
+    document.getElementById("editorHeading").innerText = "📤 सीधा HTML क्विज अपलोड करें (No Manual Question Typing)";
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    window.updateAdminQuizPreview();
+};
+
+window.deleteQuiz = async function(id) {
+    if (!confirm("क्या आप इस ऑनलाइन क्विज को हटाना चाहते हैं?")) return;
+    try {
+        await deleteDoc(doc(db, "quizzes", id));
+        showStatus("🗑️ क्विज हटा दिया गया।", true);
+    } catch (e) {
+        showStatus("❌ हटाने की अनुमति नहीं है।", false);
+    }
+};
+</script>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    document.getElementById("themeBtn").innerText = isDark ? "☀️" : "🌙";
+}
+
+function handleHtmlFileUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const content = e.target.result || "";
+        document.getElementById("quizHtmlCode").value = content;
+        document.getElementById("uploadedFileName").innerText = `✔ लोड की गई फाइल: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+
+        if (!document.getElementById("quizTitle").value.trim()) {
+            document.getElementById("quizTitle").value = file.name.replace(/\.(html|htm|txt)$/i, "");
+        }
+        updateAdminQuizPreview();
+    };
+    reader.readAsText(file);
+}
+
+function updateAdminQuizPreview() {
+    const val = document.getElementById("quizHtmlCode").value.trim();
+    const box = document.getElementById("adminQuizPreview");
+    if (!val) {
+        box.innerHTML = '<p class="text-[var(--muted)]">यहाँ आपके अपलोड किए गए HTML क्विज का लाइव प्रीव्यू दिखेगा...</p>';
+        return;
+    }
+    box.innerHTML = val;
+}
+
+function loadSampleHtmlQuiz() {
+    document.getElementById("quizTitle").value = "बिहार बोर्ड मैट्रिक (10वीं) विज्ञान आधिकारिक ऑनलाइन टेस्ट 2027";
+    document.getElementById("quizSubject").value = "Science (विज्ञान)";
+    document.getElementById("quizClass").value = "Class 10";
+    document.getElementById("quizStream").value = "All";
+    document.getElementById("quizDuration").value = "15";
+    document.getElementById("quizMarks").value = "50";
+    document.getElementById("quizChapter").value = "अध्याय 1 • Set-A";
+    document.getElementById("quizTotalQ").value = "5";
+
+    document.getElementById("quizHtmlCode").value = `<div class="q-block" data-answer="B">
+  <div class="q-title">1. प्रकाश के परावर्तन के कितने नियम हैं? (How many laws of reflection of light are there?)</div>
+  <label class="opt-row"><input type="radio" name="q1" value="A"> (A) 1</label>
+  <label class="opt-row"><input type="radio" name="q1" value="B"> (B) 2</label>
+  <label class="opt-row"><input type="radio" name="q1" value="C"> (C) 3</label>
+  <label class="opt-row"><input type="radio" name="q1" value="D"> (D) 4</label>
+</div>
+
+<div class="q-block" data-answer="D">
+  <div class="q-title">2. विद्युत धारा का SI मात्रक क्या होता है? (What is the SI unit of electric current?)</div>
+  <label class="opt-row"><input type="radio" name="q2" value="A"> (A) वोल्ट (Volt)</label>
+  <label class="opt-row"><input type="radio" name="q2" value="B"> (B) कूलॉम (Coulomb)</label>
+  <label class="opt-row"><input type="radio" name="q2" value="C"> (C) वाट (Watt)</label>
+  <label class="opt-row"><input type="radio" name="q2" value="D"> (D) एम्पियर (Ampere)</label>
+</div>
+
+<div class="q-block" data-answer="B">
+  <div class="q-title">3. शुद्ध जल का pH मान कितना होता है? (What is the pH value of pure water?)</div>
+  <label class="opt-row"><input type="radio" name="q3" value="A"> (A) 6</label>
+  <label class="opt-row"><input type="radio" name="q3" value="B"> (B) 7</label>
+  <label class="opt-row"><input type="radio" name="q3" value="C"> (C) 8</label>
+  <label class="opt-row"><input type="radio" name="q3" value="D"> (D) 9</label>
+</div>
+
+<div class="q-block" data-answer="A">
+  <div class="q-title">4. समतल दर्पण द्वारा बना प्रतिबिंब हमेशा कैसा होता है?</div>
+  <label class="opt-row"><input type="radio" name="q4" value="A"> (A) काल्पनिक और सीधा (Virtual & Erect)</label>
+  <label class="opt-row"><input type="radio" name="q4" value="B"> (B) वास्तविक और उल्टा</label>
+  <label class="opt-row"><input type="radio" name="q4" value="C"> (C) वास्तविक और सीधा</label>
+  <label class="opt-row"><input type="radio" name="q4" value="D"> (D) इनमें से कोई नहीं</label>
+</div>
+
+<div class="q-block" data-answer="C">
+  <div class="q-title">5. मानव नेत्र में किस प्रकार का लेंस पाया जाता है?</div>
+  <label class="opt-row"><input type="radio" name="q5" value="A"> (A) अवतल लेंस (Concave Lens)</label>
+  <label class="opt-row"><input type="radio" name="q5" value="B"> (B) बाइफोकल लेंस</label>
+  <label class="opt-row"><input type="radio" name="q5" value="C"> (C) उत्तल लेंस (Convex Lens)</label>
+  <label class="opt-row"><input type="radio" name="q5" value="D"> (D) समतल दर्पण</label>
+</div>`;
+    updateAdminQuizPreview();
+}
+</script>
+
+</body>
+</html>
